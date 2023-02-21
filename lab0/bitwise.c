@@ -38,7 +38,7 @@ void print_number(uint8_t n, char* type){
     printf("Binary: %s\n", byte2bin(n, binary));
 }
 
-void process(char action, uint8_t n, int bit){
+uint8_t process(char action, uint8_t n, int bit){
     uint8_t mask = BIT(bit);
 
     switch (action){
@@ -93,33 +93,64 @@ void process(char action, uint8_t n, int bit){
             break;
         }
     }
+
+    return n;
 }
 
 int main(int argc, char *argv[]){
-	char a = argv[1][0];	// action: 'h', 'l', 'r', 's', 't'
-	unsigned long inp = atoi(argv[2]); // value to convert must be smaller than 256
-	int bit = atoi(argv[3]); // bit to operate on: must be between 0 an 7
- 
-	// Validate command line arguments
-    if (a != 'h' && a != 'l' && a != 'r' && a != 's' && a != 't'){
-        perror("Error! The action you specified is not valid.\n");
+    if (argc < 4){
+        perror("Error! Invalid number of arguments (should be 3).");
         return EXIT_FAILURE;
     }
 
+	char* actions = argv[1];	// action: 'h', 'l', 'r', 's', 't'
+	unsigned long inp = atoi(argv[2]); // value to convert must be smaller than 256
+	char* bits = argv[3]; // bit to operate on: must be between 0 an 7
+    
+    int numActions = 1;
+    if (argc > 4)
+        numActions = atoi(argv[4]);
+        
+	// Validate command line arguments
     if (inp > 256){
         perror("Error! The unsigned integer must be lower than 256.\n");
         return EXIT_FAILURE;
     }
 
-    if (bit < 0 || bit > 7){
-        perror("Error! The bit you want to access must be between 0 and 7.\n");
+    if (sizeof(actions) != sizeof(bits)){
+        perror("Error! The number of actions must be equal to the number of bits.\n");
         return EXIT_FAILURE;
     }
 
-    uint8_t n = inp;
-	
-	// Do what the user asked and print the result
-    process(a, n, bit);
+    if (numActions < 0){
+        perror("Error! The number of actions to execute must be positive.\n");
+        return EXIT_FAILURE;
+    }
 
-    return 0;
+	// Do what the user asked and print the result
+    uint8_t n = inp;
+
+    printf("\n");
+    for (int i = 0; i < numActions;){
+        char a = actions[i];
+        int bit = (int) bits[i] - '0';
+
+        if (a != 'h' && a != 'l' && a != 'r' && a != 's' && a != 't'){
+            perror("Error! The action you specified is not valid.\n");
+            return EXIT_FAILURE;
+        }
+
+        if (bit < 0 || bit > 7){
+            perror("Error! The bit you want to access must be between 0 and 7.\n");
+            return EXIT_FAILURE;
+        }
+
+        n = process(a, n, bit);
+
+        if (++i < numActions)
+            printf("\n---------------------------------------------------------\n");
+        printf("\n");
+    }
+
+    return EXIT_SUCCESS;
 }
