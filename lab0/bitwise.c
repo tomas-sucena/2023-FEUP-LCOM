@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
  
 	// Validate command line arguments
     if (a != 'h' && a != 'l' && a != 'r' && a != 's' && a != 't'){
-        perror("Error! The action you speficied is not valid.\n");
+        perror("Error! The action you specified is not valid.\n");
         return EXIT_FAILURE;
     }
 
