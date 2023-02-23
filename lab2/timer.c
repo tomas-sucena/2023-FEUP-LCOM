@@ -62,8 +62,8 @@ void (timer_int_handler)() {
 int (timer_get_conf)(uint8_t timer, uint8_t *st) {
   if (timer > 2) return 1;
 
-  uint8_t rb_command = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
-  sys_outb(TIMER(timer), rb_command);
+  uint8_t read_back = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
+  sys_outb(TIMER(timer), read_back);
   
   util_sys_inb(TIMER(timer), st);
 
@@ -72,7 +72,7 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
 
 int (timer_display_conf)(uint8_t timer, uint8_t st,
                         enum timer_status_field field) {
-  if (timer < 0 || timer > 2) return 1;
+  if (timer > 2) return 1;
 
   union timer_status_field_val conf;
   switch (field){
