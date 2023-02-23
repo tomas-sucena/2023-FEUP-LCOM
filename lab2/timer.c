@@ -42,8 +42,12 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
 
 int (timer_display_conf)(uint8_t timer, uint8_t st,
                         enum timer_status_field field) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  if (timer < 0 || timer > 2) return 1;
 
-  return 1;
+  union timer_status_field_val conf;
+  switch (field){
+    // TODO
+  }
+
+  return timer_print_config(timer, field, conf);
 }
