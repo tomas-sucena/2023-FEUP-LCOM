@@ -21,7 +21,7 @@ enum timer_init get_init_mode(uint8_t st){
 
 uint8_t get_count_mode(uint8_t st){
   uint8_t mask = BIT(3) | BIT(2) | BIT(1);
-  uint mode = (st & mask) >> 1;
+  uint8_t mode = (st & mask) >> 1;
 
   if (mode > 5)
     mode &= ~BIT(2);
@@ -30,7 +30,7 @@ uint8_t get_count_mode(uint8_t st){
 }
 
 bool is_bcd(uint8_t st){
-  return (bool) st & BIT(0);
+  return st & BIT(0);
 }
 
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
