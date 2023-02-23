@@ -40,6 +40,11 @@ union timer_status_field_val {
   bool bcd;                /*!< counting base, true if BCD */
 };
 
+/* MY FUNCTIONS */
+enum timer_init get_init_mode(uint8_t st);
+uint8_t get_count_mode(uint8_t st);
+bool is_bcd(uint8_t st);
+
 /**
  * @brief Changes the operating frequency of a timer
  * 
