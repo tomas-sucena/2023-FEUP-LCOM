@@ -41,8 +41,29 @@ union timer_status_field_val {
 };
 
 /* MY FUNCTIONS */
+/**
+ * @brief returns the mode the timer was initialized with
+ * 
+ * @param st status byte of the timer
+ * @return enum timer_init
+ */
 enum timer_init get_init_mode(uint8_t st);
+
+/**
+ * @brief returns the count mode of the timer, which can range from 0 to 5
+ * 
+ * @param st status byte of the timer
+ * @return count mode of the timer
+ */
 uint8_t get_count_mode(uint8_t st);
+
+/**
+ * @brief indicates if the timer was initialized with BCD or binary value
+ * 
+ * @param st status byte of the timer
+ * @return true if the timer was initialized with a BCD value
+ * @return false if the timer was initialized with a binary value
+ */
 bool is_bcd(uint8_t st);
 
 /**

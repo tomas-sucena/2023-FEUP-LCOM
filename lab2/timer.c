@@ -9,12 +9,14 @@ enum timer_init get_init_mode(uint8_t st){
   uint8_t mask = BIT(5) | BIT(4);
   uint8_t mode = (st & mask) >> 4;
 
-  if (mode == 1)
-    return LSB_only;
-  else if (mode == 2)
-    return MSB_only;
-  else if (mode == 3)
-    return MSB_after_LSB;
+  switch (mode){
+    case 1 :
+      return LSB_only;
+    case 2 :
+      return MSB_only;
+    case 3 :
+      return MSB_after_LSB;
+  }
 
   return INVAL_val;
 }
@@ -63,10 +65,12 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
   if (timer > 2) return 1;
 
   uint8_t read_back = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
-  sys_outb(TIMER(timer), read_back);
+  
+  int flag = sys_outb(TIMER(timer), read_back);
+  if (flag)
+    return flag;
   
   util_sys_inb(TIMER(timer), st);
-
   return 0;
 }
 
