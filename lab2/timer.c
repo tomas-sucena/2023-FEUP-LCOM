@@ -60,9 +60,11 @@ void (timer_int_handler)() {
 }
 
 int (timer_get_conf)(uint8_t timer, uint8_t *st) {
-  if (timer < 0 || timer > 2) return 1;
+  if (timer > 2) return 1;
 
-  *st = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
+  uint8_t rb_command = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
+  sys_outb(TIMER(timer), rb_command);
+  
   util_sys_inb(TIMER(timer), st);
 
   return 0;
