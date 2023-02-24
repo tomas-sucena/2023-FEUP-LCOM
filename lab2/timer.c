@@ -66,7 +66,7 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
 
   uint8_t read_back = TIMER_RB_CMD | TIMER_RB_COUNT_ | TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
   
-  int flag = sys_outb(TIMER(timer), read_back);
+  int flag = sys_outb(TIMER_CTRL, read_back);
   if (flag)
     return flag;
   
