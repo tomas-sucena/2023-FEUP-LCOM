@@ -25,7 +25,7 @@ enum timer_init (get_init_mode)(uint8_t status){
   return INVAL_val;
 }
 
-uint8_t get_count_mode(uint8_t status){
+uint8_t (get_count_mode)(uint8_t status){
   uint8_t mask = BIT(3) | BIT(2) | BIT(1);
   uint8_t count_bits = (status | mask) >> 1;
 
@@ -35,7 +35,7 @@ uint8_t get_count_mode(uint8_t status){
   return count_bits;
 }
 
-bool is_bcd(uint8_t status){
+bool (is_bcd)(uint8_t status){
   return status & BIT(0);
 }
 
@@ -67,16 +67,44 @@ void (timer_int_handler)() {
 }
 
 int (timer_get_conf)(uint8_t timer, uint8_t *st) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  if (timer > 2) return 1;
+  
+  // create Read-Back command
+  uint8_t read_back = TIMER_RB_CMD | ~TIMER_RB_COUNT_ | ~TIMER_RB_STATUS_ | TIMER_RB_SEL(timer);
+  
+  // output Read-Back command
+  int flag = sys_outb(TIMER_CTRL, read_back);
+  if (flag) return flag;
 
-  return 1;
+  // read timer configuration
+  flag = util_sys_inb(TIMER(timer), st);
+
+  return flag;
 }
 
 int (timer_display_conf)(uint8_t timer, uint8_t st,
                         enum timer_status_field field) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  if (timer > 2) return 1;
+  
+  union timer_status_field_val conf;
+  switch (field){
+    case tsf_all : {
+      conf.byte = st;
+      break;
+    }
+    case tsf_initial : {
+      conf.initial = get_init_mode(st);
+      break;
+    }
+    case tsf_mode : {
+      conf.count_mode = get_count_mode(st);
+      break;
+    }
+    case tsf_base : {
+      conf.bcd = is_bcd(st);
+      break;
+    }
+  }
 
-  return 1;
+  return timer_print_config(timer, field, conf);
 }
