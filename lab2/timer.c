@@ -49,8 +49,10 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   int flag = timer_get_conf(timer, status);
   if (flag) return flag;
 
+  *status &= 0xF; // least significant bits
+
   // create the control word
-  uint8_t control_word = TIMER_LSB_MSB;
+  uint8_t control_word = TIMER_LSB_MSB | *status;
   
   switch (timer) {
     case 0 : {
