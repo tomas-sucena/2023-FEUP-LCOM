@@ -93,7 +93,7 @@ int (timer_display_conf)(uint8_t timer, uint8_t st,
       break;
     }
     case tsf_initial : {
-      conf.initial = get_init_mode(st);
+      conf.in_mode = get_init_mode(st);
       break;
     }
     case tsf_mode : {
