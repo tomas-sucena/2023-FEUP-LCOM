@@ -74,17 +74,17 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   if (flag) return flag;
 
   // write the LSB
-  uint8_t* byte = NULL;
+  uint8_t* lsb = NULL;
+  util_get_LSB((uint16_t) freq, lsb);
 
-  util_get_LSB((uint16_t) freq, byte);
-
-  flag = sys_outb(TIMER(timer), *byte);
+  flag = sys_outb(TIMER(timer), *lsb);
   if (flag) return flag;
 
   // write the MSB
-  util_get_MSB((uint16_t) freq, byte);
+  uint8_t* msb = NULL;
+  util_get_MSB((uint16_t) freq, msb);
 
-  flag = sys_outb(TIMER(timer), *byte);
+  flag = sys_outb(TIMER(timer), *msb);
   if (flag) return flag;
 
   return 0;
