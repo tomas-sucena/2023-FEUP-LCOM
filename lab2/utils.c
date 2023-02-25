@@ -17,13 +17,13 @@ int(util_get_MSB)(uint16_t val, uint8_t *msb) {
 }
 
 int (util_sys_inb)(int port, uint8_t *value) {
-  uint32_t* in = NULL;
-  value = NULL;
-
+  uint32_t* in = NULL; *in = 0;
+  
   int flag = sys_inb(port, in);
   if (flag) return flag;
   if (in == NULL) return 1;
-
+  
+  value = NULL;
   *value = (uint8_t) *in;
 
   return 0;

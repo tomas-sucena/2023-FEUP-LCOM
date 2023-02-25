@@ -41,10 +41,50 @@ bool (is_bcd)(uint8_t status){
 
 /* LAB FUNCTIONS */
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  if (timer > 2) return 1;
 
-  return 1;
+  uint8_t* status = NULL;
+
+  // read the timer's configuration
+  int flag = timer_get_conf(timer, status);
+  if (flag) return flag;
+
+  // create the control word
+  uint8_t control_word = TIMER_LSB_MSB;
+  
+  switch (timer) {
+    case 0 : {
+      control_word |= TIMER_SEL0;
+      break;
+    }
+    case 1 : {
+      control_word |= TIMER_SEL1;
+      break;
+    }
+    case 2 : {
+      control_word |= TIMER_SEL2;
+      break;
+    }
+  }
+
+  // output the control word
+  sys_outb(TIMER_CTRL, control_word);
+
+  // write the LSB
+  uint8_t* byte = NULL;
+
+  util_get_LSB((uint16_t) freq, byte);
+
+  flag = sys_outb(TIMER(timer), *byte);
+  if (flag) return flag;
+
+  // write the MSB
+  util_get_MSB((uint16_t) freq, byte);
+
+  flag = sys_outb(TIMER(timer), *byte);
+  if (flag) return flag;
+
+  return 0;
 }
 
 int (timer_subscribe_int)(uint8_t *bit_no) {
@@ -77,9 +117,7 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
   if (flag) return flag;
 
   // read timer configuration
-  flag = util_sys_inb(TIMER(timer), st);
-
-  return flag;
+  return util_sys_inb(TIMER(timer), st);
 }
 
 int (timer_display_conf)(uint8_t timer, uint8_t st,
