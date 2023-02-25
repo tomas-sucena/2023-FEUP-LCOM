@@ -58,7 +58,7 @@ enum timer_init get_init_mode(uint8_t st);
 uint8_t get_count_mode(uint8_t st);
 
 /**
- * @brief indicates if the timer was initialized with BCD or binary value
+ * @brief indicates if the timer was initialized with a BCD or binary value
  * 
  * @param st status byte of the timer
  * @return true if the timer was initialized with a BCD value
@@ -66,6 +66,7 @@ uint8_t get_count_mode(uint8_t st);
  */
 bool is_bcd(uint8_t st);
 
+/* LAB FUNCTIONS */
 /**
  * @brief Changes the operating frequency of a timer
  * 
