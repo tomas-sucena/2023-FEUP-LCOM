@@ -70,7 +70,8 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   }
 
   // output the control word
-  sys_outb(TIMER_CTRL, control_word);
+  flag = sys_outb(TIMER_CTRL, control_word);
+  if (flag) return flag;
 
   // write the LSB
   uint8_t* byte = NULL;
