@@ -44,27 +44,37 @@ union timer_status_field_val {
 /**
  * @brief returns the mode the timer was initialized with
  * 
- * @param st status byte of the timer
+ * @param status status byte of the timer
  * @return enum timer_init
  */
-enum timer_init get_init_mode(uint8_t st);
+enum timer_init (get_init_mode)(uint8_t status);
 
 /**
  * @brief returns the count mode of the timer, which can range from 0 to 5
  * 
- * @param st status byte of the timer
+ * @param status status byte of the timer
  * @return count mode of the timer
  */
-uint8_t get_count_mode(uint8_t st);
+uint8_t (get_count_mode)(uint8_t status);
 
 /**
  * @brief indicates if the timer was initialized with a BCD or binary value
  * 
- * @param st status byte of the timer
+ * @param status status byte of the timer
  * @return true if the timer was initialized with a BCD value
  * @return false if the timer was initialized with a binary value
  */
-bool is_bcd(uint8_t st);
+bool (is_bcd)(uint8_t status);
+
+/**
+ * @brief makes a control word that can be output to the control register
+ * 
+ * @param timer timer to configure (ranges from 0 to 2)
+ * @param status status byte of the timer
+ * @param control_word address of memory position to be filled with the control word
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word);
 
 /* LAB FUNCTIONS */
 /**

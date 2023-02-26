@@ -39,21 +39,12 @@ bool (is_bcd)(uint8_t status){
   return status & BIT(0);
 }
 
-/* LAB FUNCTIONS */
-int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
+int make_control_word(uint8_t timer, uint8_t status, uint8_t* control_word){
   if (timer > 2) return 1;
 
-  uint8_t* status = NULL;
+  status &= 0xF; // least significant bits
+  *control_word = TIMER_LSB_MSB | status;
 
-  // read the timer's configuration
-  int flag = timer_get_conf(timer, status);
-  if (flag) return flag;
-
-  *status &= 0xF; // least significant bits
-
-  // create the control word
-  uint8_t control_word = TIMER_LSB_MSB | *status;
-  
   switch (timer) {
     case 0 : {
       control_word |= TIMER_SEL0;
@@ -69,8 +60,27 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
     }
   }
 
+  return 0;
+}
+
+/* LAB FUNCTIONS */
+int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
+  if (timer > 2) return 1;
+
+  // read the timer's configuration
+  uint8_t* status = NULL;
+
+  int flag = timer_get_conf(timer, status);
+  if (flag) return flag;
+
+  // create the control word
+  uint8_t* control_word = NULL;
+
+  flag = get_control_word(timer, *status, control_word);
+  if (flag) return flag;
+  
   // output the control word
-  flag = sys_outb(TIMER_CTRL, control_word);
+  flag = sys_outb(TIMER_CTRL, *control_word);
   if (flag) return flag;
 
   // write the LSB
