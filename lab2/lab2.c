@@ -30,12 +30,12 @@ int main(int argc, char *argv[]) {
 }
 
 int(timer_test_read_config)(uint8_t timer, enum timer_status_field field) {
-  uint8_t* status = NULL;
+  uint8_t status = 0;
 
-  int flag = timer_get_conf(timer, status);
+  int flag = timer_get_conf(timer, &status);
   if (flag) return flag;
 
-  return timer_display_conf(timer, *status, field);;
+  return timer_display_conf(timer, status, field);
 }
 
 int(timer_test_time_base)(uint8_t timer, uint32_t freq) {

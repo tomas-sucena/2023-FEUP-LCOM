@@ -39,7 +39,7 @@ bool (is_bcd)(uint8_t status){
   return status & BIT(0);
 }
 
-int make_control_word(uint8_t timer, uint8_t status, uint8_t* control_word){
+int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word){
   if (timer > 2) return 1;
 
   status &= 0xF; // least significant bits
@@ -83,19 +83,15 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   flag = sys_outb(TIMER_CTRL, control_word);
   if (flag) return flag;
 
-  // calculate initial counting value
-  uint16_t initial_count = TIMER_FREQ / freq;
+  // output initial counting value
+  uint16_t initial_count = (uint16_t) (TIMER_FREQ / freq);
 
-  // write the LSB
-  uint8_t lsb = 0;
+  uint8_t lsb = 0, msb = 0;
   util_get_LSB(initial_count, &lsb);
+  util_get_MSB(initial_count, &msb);
 
   flag = sys_outb(TIMER(timer), lsb);
   if (flag) return flag;
-
-  // write the MSB
-  uint8_t msb = 0;
-  util_get_MSB(initial_count, &msb);
 
   flag = sys_outb(TIMER(timer), msb);
   if (flag) return flag;
