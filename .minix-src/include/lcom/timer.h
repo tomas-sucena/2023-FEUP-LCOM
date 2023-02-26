@@ -69,12 +69,12 @@ bool (is_bcd)(uint8_t status);
 /**
  * @brief makes a control word that can be output to the control register
  * 
- * @param timer timer to configure (ranges from 0 to 2)
- * @param status status byte of the timer
+ * @param timer timer that the control word targets (ranges from 0 to 2)
+ * @param init specifies how the timer's counter will be initialized
  * @param control_word address of memory position to be filled with the control word
  * @return Return 0 upon success and non-zero otherwise
  */
-int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word);
+int (make_control_word)(uint8_t timer, enum timer_init init, uint8_t* control_word);
 
 /* LAB FUNCTIONS */
 /**

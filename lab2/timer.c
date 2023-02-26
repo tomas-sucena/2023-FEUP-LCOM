@@ -39,11 +39,19 @@ bool (is_bcd)(uint8_t status){
   return status & BIT(0);
 }
 
-int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word){
+int (make_control_word)(uint8_t timer, enum timer_init init, uint8_t* control_word){
   if (timer > 2) return 1;
 
+  // read the timer's configuration
+  uint8_t status = 0;
+
+  int flag = timer_get_conf(timer, &status);
+  if (flag) return flag;
+
   status &= 0xF; // least significant bits
-  *control_word = TIMER_LSB_MSB | status;
+
+  // create the control word
+  *control_word = status;
 
   switch (timer) {
     case 0 : {
@@ -60,6 +68,22 @@ int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word){
     }
   }
 
+  switch (init){
+    case LSB_only : {
+      *control_word |= TIMER_LSB;
+      break;
+    }
+    case MSB_only : {
+      *control_word |= TIMER_MSB;
+      break;
+    }
+    case MSB_after_LSB : {
+      *control_word |= TIMER_LSB_MSB;
+      break;
+    }
+    default : return 1;
+  }
+
   return 0;
 }
 
@@ -67,16 +91,10 @@ int (make_control_word)(uint8_t timer, uint8_t status, uint8_t* control_word){
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   if (timer > 2) return 1;
 
-  // read the timer's configuration
-  uint8_t status = 0;
-
-  int flag = timer_get_conf(timer, &status);
-  if (flag) return flag;
-
   // create the control word
   uint8_t control_word = 0;
 
-  flag = make_control_word(timer, status, &control_word);
+  int flag = make_control_word(timer, MSB_after_LSB, &control_word);
   if (flag) return flag;
   
   // output the control word
