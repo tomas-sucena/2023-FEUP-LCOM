@@ -8,7 +8,7 @@
 /* MY FUNCTIONS */
 enum timer_init (get_init_mode)(uint8_t status){
   uint8_t mask = BIT(5) | BIT(4);
-  uint8_t init_bits = (status | mask) >> 4;
+  uint8_t init_bits = (status & mask) >> 4;
 
   switch (init_bits){
     case 1 : {
@@ -27,7 +27,7 @@ enum timer_init (get_init_mode)(uint8_t status){
 
 uint8_t (get_count_mode)(uint8_t status){
   uint8_t mask = BIT(3) | BIT(2) | BIT(1);
-  uint8_t count_bits = (status | mask) >> 1;
+  uint8_t count_bits = (status & mask) >> 1;
 
   if (count_bits > 5)
     count_bits &= ~BIT(2);
