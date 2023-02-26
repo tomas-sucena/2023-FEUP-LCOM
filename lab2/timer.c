@@ -83,16 +83,19 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   flag = sys_outb(TIMER_CTRL, control_word);
   if (flag) return flag;
 
+  // calculate initial counting value
+  uint16_t initial_count = TIMER_FREQ / freq;
+
   // write the LSB
   uint8_t lsb = 0;
-  util_get_LSB((uint16_t) freq, &lsb);
+  util_get_LSB(initial_count, &lsb);
 
   flag = sys_outb(TIMER(timer), lsb);
   if (flag) return flag;
 
   // write the MSB
   uint8_t msb = 0;
-  util_get_MSB((uint16_t) freq, &msb);
+  util_get_MSB(initial_count, &msb);
 
   flag = sys_outb(TIMER(timer), msb);
   if (flag) return flag;
