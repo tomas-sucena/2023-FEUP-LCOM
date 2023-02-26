@@ -47,15 +47,15 @@ int make_control_word(uint8_t timer, uint8_t status, uint8_t* control_word){
 
   switch (timer) {
     case 0 : {
-      control_word |= TIMER_SEL0;
+      *control_word |= TIMER_SEL0;
       break;
     }
     case 1 : {
-      control_word |= TIMER_SEL1;
+      *control_word |= TIMER_SEL1;
       break;
     }
     case 2 : {
-      control_word |= TIMER_SEL2;
+      *control_word |= TIMER_SEL2;
       break;
     }
   }
@@ -76,7 +76,7 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   // create the control word
   uint8_t* control_word = NULL;
 
-  flag = get_control_word(timer, *status, control_word);
+  flag = make_control_word(timer, *status, control_word);
   if (flag) return flag;
   
   // output the control word
