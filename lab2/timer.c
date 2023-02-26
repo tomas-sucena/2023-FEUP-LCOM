@@ -87,8 +87,8 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
   uint16_t initial_count = (uint16_t) (TIMER_FREQ / freq);
 
   uint8_t lsb = 0, msb = 0;
-  util_get_LSB(initial_count, &lsb);
-  util_get_MSB(initial_count, &msb);
+  if (util_get_LSB(initial_count, &lsb) || util_get_MSB(initial_count, &msb))
+    return 1;
 
   flag = sys_outb(TIMER(timer), lsb);
   if (flag) return flag;
