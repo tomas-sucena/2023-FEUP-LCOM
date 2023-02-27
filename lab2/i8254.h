@@ -26,6 +26,7 @@
 
 /* Timer selection: bits 7 and 6 */
 
+#define TIMER_SEL(n) (n << 6)
 #define TIMER_SEL0   0x00              /**< @brief Control Word for Timer 0 */
 #define TIMER_SEL1   BIT(6)            /**< @brief Control Word for Timer 1 */
 #define TIMER_SEL2   BIT(7)            /**< @brief Control Word for Timer 2 */

@@ -51,22 +51,7 @@ int (make_control_word)(uint8_t timer, enum timer_init init, uint8_t* control_wo
   status &= 0xF; // least significant bits
 
   // create the control word
-  *control_word = status;
-
-  switch (timer) {
-    case 0 : {
-      *control_word |= TIMER_SEL0;
-      break;
-    }
-    case 1 : {
-      *control_word |= TIMER_SEL1;
-      break;
-    }
-    case 2 : {
-      *control_word |= TIMER_SEL2;
-      break;
-    }
-  }
+  *control_word = TIMER_SEL(timer) | status;
 
   switch (init){
     case LSB_only : {
