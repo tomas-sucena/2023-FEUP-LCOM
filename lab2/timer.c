@@ -74,7 +74,7 @@ int (make_control_word)(uint8_t timer, enum timer_init init, uint8_t* control_wo
 
 /* LAB FUNCTIONS */
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
-  if (timer > 2) return 1;
+  if (timer > 2 || freq < 19) return 1;
 
   // create the control word
   uint8_t control_word = 0;
