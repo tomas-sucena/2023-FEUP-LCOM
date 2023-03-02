@@ -5,6 +5,9 @@
 
 #include "i8254.h"
 
+extern int hook_id;
+extern int acc;
+
 /* MY FUNCTIONS */
 enum timer_init (get_init_mode)(uint8_t status){
   uint8_t mask = BIT(5) | BIT(4);
@@ -103,22 +106,16 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
 }
 
 int (timer_subscribe_int)(uint8_t *bit_no) {
-    /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
-
-  return 1;
+  *bit_no = hook_id;
+  return sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &hook_id);
 }
 
 int (timer_unsubscribe_int)() {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
-
-  return 1;
+  return sys_irqrmpolicy(&hook_id);
 }
 
 void (timer_int_handler)() {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  ++acc;
 }
 
 int (timer_get_conf)(uint8_t timer, uint8_t *st) {

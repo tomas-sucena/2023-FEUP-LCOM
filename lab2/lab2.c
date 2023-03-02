@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+int hook_id;
+int acc;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -43,8 +45,39 @@ int(timer_test_time_base)(uint8_t timer, uint32_t freq) {
 }
 
 int(timer_test_int)(uint8_t time) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  // global variables
+  hook_id = 0;
+  acc = 0;
 
-  return 1;
+  // local variables
+  int ipc_status;
+  message msg;
+
+  uint8_t bit_no = 0;
+  timer_subscribe_int(&bit_no);
+
+  while (acc < time * 60){
+    int flag = driver_receive(ANY, &msg, &ipc_status);
+    if (flag){
+      printf("driver_receive failed with: %d", flag);
+      continue;
+    }
+
+    if (!is_ipc_notify(ipc_status)) continue;
+
+    switch (_ENDPOINT_P(msg.m_source)){
+      case HARDWARE : {
+        bool subscribedInt = msg.m_notify.interrupts & BIT(bit_no);
+        if (!subscribedInt) break;
+
+        timer_int_handler();
+        if (acc % 60) break;
+
+        timer_print_elapsed_time();
+      }
+      default : break;
+    }
+  }
+
+  return timer_unsubscribe_int();
 }
