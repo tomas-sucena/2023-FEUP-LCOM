@@ -52,9 +52,10 @@ int(timer_test_int)(uint8_t time) {
   // local variables
   int ipc_status;
   message msg;
-
   uint8_t bit_no = 0;
-  timer_subscribe_int(&bit_no);
+
+  int flag = timer_subscribe_int(&bit_no);
+  if (flag) return flag;
 
   while (acc < time * 60){
     int flag = driver_receive(ANY, &msg, &ipc_status);
