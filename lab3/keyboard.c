@@ -2,8 +2,12 @@
 
 #include "keyboard.h"
 
-extern uint8_t hook_id;
+#include <stdbool.h>
+
+extern int hook_id;
 extern uint8_t scancode;
+extern uint32_t cnt;
+extern bool valid_scancode;
 
 int (kbd_subscribe_int)(uint8_t* bit_no){
     if (bit_no == NULL) return 1;
@@ -16,13 +20,14 @@ int (kbd_unsubscribe_int)(){
     return sys_irqrmpolicy(&hook_id);
 }
 
-void (kbd_int_handler)(){
+void (kbd_ih)(){
     uint8_t st = 0;
 
     kbd_read_status(&st);
-    int flag = kbd_parse_status(st); 
+    valid_scancode = kbd_parse_status(st); 
 
-    sys_outb(KBD_OBF);
+    util_sys_inb(KBD_OBF, &scancode); // even if the data is invalid, we must read it
+    ++cnt;
 }
 
 int (kbd_read_status)(uint8_t* st){
@@ -31,5 +36,6 @@ int (kbd_read_status)(uint8_t* st){
 }
 
 int (kbd_parse_status)(uint8_t st){
-    return (st & (KBD_PARITY_ERR | KBD_TIMEOUT_ERR | KBD_MOUSE_DATA | ~KBD_OBF_FULL));
+    if (!(st & KBD_OBF_FULL)) return 1;
+    return (st & (KBD_PARITY_ERR | KBD_TIMEOUT_ERR | KBD_MOUSE_DATA));
 }

@@ -9,6 +9,7 @@
 /* SCANCODES */
 #define KBD_ESC_BREAKCODE 0x81
 #define breakcode(makecode) makecode | BIT(7)
+#define is_makecode(scancode) !(scancode & BIT(7))
 
 /* REGISTERS */
 #define KBD_STATUS_REG 0x64

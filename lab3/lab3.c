@@ -1,9 +1,15 @@
 #include <lcom/lcf.h>
-
 #include <lcom/lab3.h>
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "keyboard.h"
+
+int hook_id;
+uint8_t scancode;
+uint32_t cnt;
+bool valid_scancode;
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -32,17 +38,19 @@ int main(int argc, char *argv[]) {
 int(kbd_test_scan)() {
     // global variabes
     hook_id = 0;
-    acc = 0;
     scancode = 0;
-
+    cnt = 0;
+    
     // local variables
     int ipc_status;
     message msg;
     uint8_t bit_no = 0;
+    bool two_byte_scancode = false;
 
     int flag = kbd_subscribe_int(&bit_no);
     if (flag) return flag;
 
+    uint8_t bytes[2];
     while (scancode != KBD_ESC_BREAKCODE){
         int flag = driver_receive(ANY, &msg, &ipc_status);
         if (flag){
@@ -57,13 +65,32 @@ int(kbd_test_scan)() {
                 bool subscribedInt = msg.m_notify.interrupts & BIT(bit_no);
                 if (!subscribedInt) break;
 
-                kbd_int_handler();
+                kbd_ih();
+                if (!valid_scancode) break;
 
+                if (two_byte_scancode){
+                    bytes[1] = scancode;
+                    kbd_print_scancode(is_makecode(bytes[1]), 2, bytes);
+
+                    two_byte_scancode = false;
+
+                    break;
+                }
+
+                bytes[0] = scancode;
+
+                two_byte_scancode = (scancode == 0xE0);
+                if (two_byte_scancode) break;
+
+                kbd_print_scancode(is_makecode(bytes[0]), 1, bytes);
             }
+            default : break;
         }
     }
 
     kbd_unsubscribe_int();
+    kbd_print_no_sysinb(cnt);
+
     return 0;
 }
 
