@@ -7,9 +7,9 @@
 #include "keyboard.h"
 
 int hook_id;
-uint8_t scancode;
 uint32_t cnt;
-bool valid_scancode;
+uint8_t data;
+bool valid_data;
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -35,23 +35,29 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+void kbd_ih(){
+    data = 0;
+    kbd_get_scancode(&data);
+}
+
 int(kbd_test_scan)() {
     // global variabes
     hook_id = 0;
-    scancode = 0;
     cnt = 0;
     
     // local variables
     int ipc_status;
     message msg;
     uint8_t bit_no = 0;
-    bool two_byte_scancode = false;
+    uint8_t mask = BIT(bit_no);
 
     int flag = kbd_subscribe_int(&bit_no);
     if (flag) return flag;
 
-    uint8_t bytes[2];
-    while (scancode != KBD_ESC_BREAKCODE){
+    uint8_t scancode[2];
+    bool two_byte_scancode = false;
+    
+    while (data != KBD_ESC_BREAKCODE){
         int flag = driver_receive(ANY, &msg, &ipc_status);
         if (flag){
             printf("driver_receive failed with: %d", flag);
@@ -62,34 +68,37 @@ int(kbd_test_scan)() {
 
         switch(_ENDPOINT_P(msg.m_source)){
             case HARDWARE : {
-                bool subscribedInt = msg.m_notify.interrupts & BIT(bit_no);
+                bool subscribedInt = msg.m_notify.interrupts & mask;
                 if (!subscribedInt) break;
 
                 kbd_ih();
-                if (!valid_scancode) break;
+                if (!valid_data) break;
 
                 if (two_byte_scancode){
-                    bytes[1] = scancode;
-                    kbd_print_scancode(is_makecode(bytes[1]), 2, bytes);
+                    scancode[1] = data;
+                    kbd_print_scancode(is_makecode(scancode[1]), 2, scancode);
 
                     two_byte_scancode = false;
 
                     break;
                 }
 
-                bytes[0] = scancode;
+                scancode[0] = data;
 
-                two_byte_scancode = (scancode == 0xE0);
+                two_byte_scancode = (data == 0xE0);
                 if (two_byte_scancode) break;
 
-                kbd_print_scancode(is_makecode(bytes[0]), 1, bytes);
+                kbd_print_scancode(is_makecode(scancode[0]), 1, scancode);
             }
             default : break;
         }
     }
 
-    kbd_unsubscribe_int();
-    kbd_print_no_sysinb(cnt);
+    flag = kbd_unsubscribe_int();
+    if (flag) return flag;
+
+    flag = kbd_print_no_sysinb(cnt);
+    if (flag) return flag;
 
     return 0;
 }

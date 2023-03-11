@@ -1,1 +1,5 @@
 .vscode/
+
+# MINIX output files
+output.txt
+trace.txt

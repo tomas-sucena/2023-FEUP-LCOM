@@ -8,7 +8,7 @@
 
 /* SCANCODES */
 #define KBD_ESC_BREAKCODE 0x81
-#define breakcode(makecode) makecode | BIT(7)
+#define breakcode(makecode) (makecode | BIT(7))
 #define is_makecode(scancode) !(scancode & BIT(7))
 
 /* REGISTERS */
@@ -16,8 +16,8 @@
 #define KBD_OBF 0x60
 
 /* STATUS BITS */
-#define KBD_PARITY_ERR BIT(7)
-#define KBD_TIMEOUT_ERR BIT(6)
+#define KBD_PARITY_ERROR BIT(7)
+#define KBD_TIMEOUT_ERROR BIT(6)
 #define KBD_MOUSE_DATA BIT(5)
 #define KBD_IBF_FULL BIT(1)
 #define KBD_OBF_FULL BIT(0)
