@@ -91,6 +91,7 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
 
   // output initial counting value
   uint16_t initial_count = (uint16_t) (TIMER_FREQ / freq);
+  if (initial_count < 1) return 1;
 
   uint8_t lsb = 0, msb = 0;
   if (util_get_LSB(initial_count, &lsb) || util_get_MSB(initial_count, &msb))

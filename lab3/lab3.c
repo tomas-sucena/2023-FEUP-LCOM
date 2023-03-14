@@ -85,7 +85,7 @@ int(kbd_test_scan)() {
 
                 scancode[0] = data;
 
-                two_byte_scancode = (data == 0xE0);
+                two_byte_scancode = (data == KBD_2B_SCANCODE);
                 if (two_byte_scancode) break;
 
                 kbd_print_scancode(is_makecode(scancode[0]), 1, scancode);
@@ -97,17 +97,42 @@ int(kbd_test_scan)() {
     flag = kbd_unsubscribe_int();
     if (flag) return flag;
 
-    flag = kbd_print_no_sysinb(cnt);
-    if (flag) return flag;
-
-    return 0;
+    return kbd_print_no_sysinb(cnt);
 }
 
 int(kbd_test_poll)() {
-    /* To be completed by the students */
-    printf("%s is not yet implemented!\n", __func__);
+    // global variables
+    cnt = 0;
 
-    return 1;
+    // local variables
+    uint8_t scancode[2];
+    bool two_byte_scancode = false;
+
+    while (data != KBD_ESC_BREAKCODE){
+        kbd_ih();
+        if (!valid_data) continue;
+
+        if (two_byte_scancode){
+            scancode[1] = data;
+            kbd_print_scancode(is_makecode(scancode[1]), 2, scancode);
+
+            two_byte_scancode = false;
+
+            continue;
+        }
+
+        scancode[0] = data;
+        
+        two_byte_scancode = (data == KBD_2B_SCANCODE);
+        if (two_byte_scancode) continue;
+
+        kbd_print_scancode(is_makecode(scancode[0]), 1, scancode);
+    }
+
+    int flag = kbd_enable_int();
+    if (flag) return flag;
+
+    return kbd_print_no_sysinb(cnt);
 }
 
 int(kbd_test_timed_scan)(uint8_t n) {

@@ -1,8 +1,8 @@
 #include <lcom/lcf.h>
 
-#include "keyboard.h"
-
 #include <stdbool.h>
+
+#include "keyboard.h"
 
 extern int hook_id;
 extern uint32_t cnt;
@@ -27,6 +27,10 @@ void (kbd_get_scancode)(uint8_t* scancode){
 
     util_sys_inb(KBD_OBF, scancode); // even if the data is invalid, we must read it
     ++cnt;
+}
+
+int (kbd_enable_int)(){
+    return kbc_enable_int();
 }
 
 int (kbd_get_status)(uint8_t* st){
