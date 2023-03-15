@@ -6,8 +6,10 @@
 
 #include "keyboard.h"
 
+#define DELAY_US 20000
+
 int hook_id;
-uint32_t cnt;
+uint32_t acc;
 uint8_t data;
 bool valid_data;
 
@@ -43,7 +45,7 @@ void kbd_ih(){
 int(kbd_test_scan)() {
     // global variabes
     hook_id = 0;
-    cnt = 0;
+    acc = 0;
     
     // local variables
     int ipc_status;
@@ -97,12 +99,12 @@ int(kbd_test_scan)() {
     flag = kbd_unsubscribe_int();
     if (flag) return flag;
 
-    return kbd_print_no_sysinb(cnt);
+    return kbd_print_no_sysinb(acc);
 }
 
 int(kbd_test_poll)() {
     // global variables
-    cnt = 0;
+    acc = 0;
 
     // local variables
     uint8_t scancode[2];
@@ -110,7 +112,10 @@ int(kbd_test_poll)() {
 
     while (data != KBD_ESC_BREAKCODE){
         kbd_ih();
-        if (!valid_data) continue;
+        if (!valid_data){
+            tickdelay(micros_to_ticks(DELAY_US));
+            continue;
+        }
 
         if (two_byte_scancode){
             scancode[1] = data;
@@ -124,7 +129,10 @@ int(kbd_test_poll)() {
         scancode[0] = data;
         
         two_byte_scancode = (data == KBD_2B_SCANCODE);
-        if (two_byte_scancode) continue;
+        if (two_byte_scancode){
+            tickdelay(micros_to_ticks(DELAY_US));
+            continue;
+        }
 
         kbd_print_scancode(is_makecode(scancode[0]), 1, scancode);
     }
@@ -132,7 +140,7 @@ int(kbd_test_poll)() {
     int flag = kbd_enable_int();
     if (flag) return flag;
 
-    return kbd_print_no_sysinb(cnt);
+    return kbd_print_no_sysinb(acc);
 }
 
 int(kbd_test_timed_scan)(uint8_t n) {

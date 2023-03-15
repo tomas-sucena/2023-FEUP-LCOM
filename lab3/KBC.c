@@ -2,6 +2,8 @@
 
 #include "KBC.h"
 
+extern int acc;
+
 int (kbc_get_command)(uint8_t* command){
     if (command == NULL) return 1;
 
@@ -9,6 +11,7 @@ int (kbc_get_command)(uint8_t* command){
     int flag = sys_outb(KBD_COMMAND_REG, KBC_READ);
     if (flag) return flag;
 
+    ++acc;
     return util_sys_inb(KBD_OBF, command);
 }
 

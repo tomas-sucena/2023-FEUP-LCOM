@@ -5,7 +5,7 @@
 #include "keyboard.h"
 
 extern int hook_id;
-extern uint32_t cnt;
+extern uint32_t acc;
 extern bool valid_data;
 
 int (kbd_subscribe_int)(uint8_t* bit_no){
@@ -26,7 +26,7 @@ void (kbd_get_scancode)(uint8_t* scancode){
     valid_data = (kbd_parse_status(st) == NO_ERROR); 
 
     util_sys_inb(KBD_OBF, scancode); // even if the data is invalid, we must read it
-    ++cnt;
+    ++acc;
 }
 
 int (kbd_enable_int)(){
@@ -35,6 +35,8 @@ int (kbd_enable_int)(){
 
 int (kbd_get_status)(uint8_t* st){
     if (st == NULL) return 1;
+
+    ++acc;
     return util_sys_inb(KBD_STATUS_REG, st);
 }
 
