@@ -17,9 +17,9 @@ enum kbc_status {
 };
 
 // OBF functions
-int kbc_get_status(uint8_t* status);
-enum kbc_status kbc_parse_status(uint8_t status);
-int kbc_read_obf(uint8_t* data, int timeout);
+int (kbc_get_status)(uint8_t* status);
+enum kbc_status (kbc_parse_status)(uint8_t status);
+int (kbc_read_obf)(uint8_t* data, int timeout);
 
 int (kbc_get_command)(uint8_t* command);
 int (kbc_write_command)(uint8_t command);
