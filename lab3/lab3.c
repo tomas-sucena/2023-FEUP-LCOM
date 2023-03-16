@@ -5,8 +5,7 @@
 #include <stdint.h>
 
 #include "keyboard.h"
-
-#define DELAY_US 20000
+#include "i8042.h"
 
 int hook_id;
 uint32_t acc;
@@ -112,10 +111,7 @@ int(kbd_test_poll)() {
 
     while (data != KBD_ESC_BREAKCODE){
         kbd_ih();
-        if (!valid_data){
-            tickdelay(micros_to_ticks(DELAY_US));
-            continue;
-        }
+        if (!valid_data) break;
 
         if (two_byte_scancode){
             scancode[1] = data;
@@ -129,10 +125,8 @@ int(kbd_test_poll)() {
         scancode[0] = data;
         
         two_byte_scancode = (data == KBD_2B_SCANCODE);
-        if (two_byte_scancode){
-            tickdelay(micros_to_ticks(DELAY_US));
+        if (two_byte_scancode)
             continue;
-        }
 
         kbd_print_scancode(is_makecode(scancode[0]), 1, scancode);
     }

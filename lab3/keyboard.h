@@ -3,26 +3,14 @@
 
 #include <stdint.h>
 
-#include "i8042.h"
-#include "KBC.h"
-
-enum kbd_status {
-    NO_ERROR,
-    PARITY_ERROR,
-    TIMEOUT_ERROR,
-    MOUSE_DATA,
-    IBF_FULL,
-    OBF_FULL
-};
+/* IRQ */
+#define KBD_IRQ 1
 
 // for interrupts
 int (kbd_subscribe_int)(uint8_t *bit_no);
 int (kbd_unsubscribe_int)();
-void (kbd_get_scancode)(uint8_t *scancode);
 int (kbd_enable_int)();
 
-// parse keyboard status
-int (kbd_get_status)(uint8_t *st);
-enum kbd_status (kbd_parse_status)(uint8_t st);
+void (kbd_get_scancode)(uint8_t *scancode);
 
 #endif // _LCOM_KEYBOARD_H_
