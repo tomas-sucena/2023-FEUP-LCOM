@@ -4,12 +4,6 @@
 #include <lcom/lcf.h>
 #include <stdbool.h>
 
-/* SCANCODES */
-#define KBD_ESC_BREAKCODE 0x81
-#define KBD_2B_SCANCODE 0xE0
-#define breakcode(makecode) (makecode | BIT(7))
-#define is_makecode(scancode) !(scancode & BIT(7))
-
 /* REGISTERS */
 #define KBC_STATUS_REG 0x64
 #define KBC_COMMAND_REG 0x64 // for writing KBC commands

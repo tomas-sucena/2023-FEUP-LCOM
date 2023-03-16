@@ -3,12 +3,12 @@
 #include "KBC.h"
 #include "i8042.h"
 
-extern uint32_t acc;
+extern uint32_t sysinb_calls;
 
 int (kbc_get_status)(uint8_t* status){
     if (status == NULL) return 1;
 
-    ++acc;
+    ++sysinb_calls;
     return util_sys_inb(KBC_STATUS_REG, status);
 }
 
@@ -46,7 +46,7 @@ int (kbc_read_obf)(uint8_t* data, int timeout){
                 break;
             }
             case NO_ERROR : {
-                ++acc;
+                ++sysinb_calls;
                 return util_sys_inb(KBC_OBF, data);
             }
             default : return 1;
