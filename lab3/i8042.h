@@ -7,6 +7,7 @@
 /* REGISTERS */
 #define KBC_STATUS_REG 0x64
 #define KBC_COMMAND_REG 0x64 // for writing KBC commands
+#define KBC_IBF 0x60
 #define KBC_OBF 0x60
 
 /* KBC STATUS BITS */
