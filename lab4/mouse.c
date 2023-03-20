@@ -5,6 +5,7 @@
 
 extern int mouse_hook_id;
 extern struct packet pp;
+extern uint8_t counter;
 
 int (mouse_subscribe_int)(uint8_t* bit_no){
     if (bit_no == NULL) return 1;
@@ -18,7 +19,18 @@ int (mouse_unsubscribe_int)(){
 }
 
 void (mouse_get_data)(struct packet* pp, int wait_seconds){
+    uint8_t data = 0;
+    kbc_read_obf(&data, wait_seconds);
 
+    // check if there were any errors
+    struct kbc_status status = kbc_parse_status();
+    if (status.parity_error || status.timeout_error || !status.mouse_data){
+        counter = 0;
+        return;
+    }
+
+    if (counter || is_first_byte(data))
+        pp->bytes[counter++] = data;
 }
 
 void mouse_parse_packet(struct packet* pp){
@@ -30,8 +42,8 @@ void mouse_parse_packet(struct packet* pp){
     pp->x_ov = (first_byte & MOUSE_X_OVFL);
 
     // offsets
-    pp->delta_y = (first_byte & MOUSE_Y_MSB) ? -delta_y : delta_y;
-    pp->delta_x = (first_byte & MOUSE_X_MSB) ? -delta_x : delta_x;
+    pp->delta_y = (first_byte & MOUSE_Y_MSB) ? sign_extend(delta_y) : delta_y;
+    pp->delta_x = (first_byte & MOUSE_X_MSB) ? sign_extend(delta_x) : delta_x;
 
     // buttons
     pp->mb = (first_byte & MOUSE_MIDDLE_BUTTON);

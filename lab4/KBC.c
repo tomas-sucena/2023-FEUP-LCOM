@@ -3,10 +3,7 @@
 #include "KBC.h"
 #include "i8042.h"
 
-extern uint32_t sysinb_calls;
-
 int (kbc_get_status)(){
-    ++sysinb_calls;
     return util_sys_inb(KBC_STATUS_REG, &st);
 }
 
@@ -68,7 +65,6 @@ int (kbc_read_obf)(uint8_t* data, int wait_seconds){
     int flag = kbc_delay_read(wait_seconds);
     if (flag) return flag;
 
-    ++sysinb_calls;
     return util_sys_inb(KBC_OBF, data);
 }
 
@@ -112,12 +108,12 @@ int (kbc_enable_int)(int wait_seconds){
     uint8_t command = 0;
 
     // read the command byte
-    int flag = kbc_get_command_byte(&command, 5);
+    int flag = kbc_get_command_byte(&command, wait_seconds);
     if (flag) return flag;
 
     // enable interrupts
     command |= KBC_ENABLE_KBD_INT;
-    return kbc_set_command_byte(command, 5);
+    return kbc_set_command_byte(command, wait_seconds);
 }
 
 int (kbc_get_mouse_byte)(uint8_t* byte, int wait_seconds){

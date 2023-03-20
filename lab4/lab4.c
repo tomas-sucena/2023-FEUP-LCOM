@@ -53,11 +53,14 @@ int (mouse_test_packet)(uint32_t cnt) {
     int flag = mouse_subscribe_int(&mouse_bit_no);
     if (flag) return flag;
 
+    flag = mouse_enable_data_reporting();
+    if (flag) return flag;
+
     while (cnt){
         flag = driver_receive(ANY, &msg, &ipc_status);
         if (flag){
-          printf("driver_receive failed with: %d", flag);
-          continue;
+            printf("driver_receive failed with: %d", flag);
+            continue;
         }
 
         if (!is_ipc_notify(ipc_status)) continue;
@@ -70,9 +73,11 @@ int (mouse_test_packet)(uint32_t cnt) {
                 mouse_ih();
                 if (counter < 3) break;
 
-                --cnt;
-                flag = mouse_print_packet(&pp);
+                mouse_parse_packet(&pp);        
+                mouse_print_packet(&pp);
+
                 counter = 0;
+                --cnt;
             }
             default : break;
         }
@@ -87,7 +92,7 @@ int (mouse_test_async)(uint8_t idle_time) {
     return 1;
 }
 
-int (mouse_test_gesture)() {
+int (mouse_test_gesture)(uint8_t x_len, uint8_t tolerance) {
     /* To be completed */
     printf("%s: under construction\n", __func__);
     return 1;

@@ -53,6 +53,7 @@ int(timer_test_int)(uint8_t time) {
   int ipc_status;
   message msg;
   uint8_t bit_no = 0;
+  uint32_t mask = BIT(bit_no);
 
   int flag = timer_subscribe_int(&bit_no);
   if (flag) return flag;
@@ -68,7 +69,7 @@ int(timer_test_int)(uint8_t time) {
 
     switch (_ENDPOINT_P(msg.m_source)){
       case HARDWARE : {
-        bool subscribedInt = msg.m_notify.interrupts & BIT(bit_no);
+        bool subscribedInt = msg.m_notify.interrupts & mask;
         if (!subscribedInt) break;
 
         timer_int_handler();

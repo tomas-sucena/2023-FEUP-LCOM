@@ -4,8 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* KBC COMMANDS */
 #define KBC_READ 0x20
 #define KBC_WRITE 0x60
+#define KBC_FORWARD_TO_MOUSE 0xD4
+
 #define DELAY_US 20000
 
 struct kbc_status {
@@ -31,13 +34,11 @@ int (kbc_write_command)(uint8_t command, int wait_seconds);
 int (kbc_get_command_byte)(uint8_t* command, int wait_seconds);
 int (kbc_set_command_byte)(uint8_t command, int wait_seconds);
 
-// OBF functions
+// I/O buffer functions
 int (kbc_read_obf)(uint8_t* data, int wait_seconds);
+int (kbc_write_ibf)(uint8_t data, int wait_seconds);
 
 // keyboard functions
 int (kbc_enable_int)(int wait_seconds);
-
-// mouse functions
-int (kbc_get_mouse_byte)(uint8_t* byte, int wait_seconds);
 
 #endif // _LCOM_KBC_H_
