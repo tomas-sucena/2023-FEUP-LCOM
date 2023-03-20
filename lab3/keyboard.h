@@ -13,7 +13,7 @@
 #define breakcode(makecode) (makecode | BIT(7))
 #define is_makecode(scancode) !(scancode & BIT(7))
 
-struct obf_data {
+struct kbd_data {
     uint8_t scancode;
     bool valid;
     bool two_byte;
@@ -24,6 +24,6 @@ int (kbd_enable_int)(int wait_seconds);
 int (kbd_subscribe_int)(uint8_t *bit_no);
 int (kbd_unsubscribe_int)();
 
-void (kbd_get_scancode)(struct obf_data* data, int wait_seconds);
+void (kbd_get_scancode)(struct kbd_data* data, int wait_seconds);
 
 #endif // _LCOM_KEYBOARD_H_

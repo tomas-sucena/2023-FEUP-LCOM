@@ -4,7 +4,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "mouse.h"
+
+#define WAIT 5
+
 int mouse_hook_id;
+struct packet pp;
+uint8_t counter;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -30,7 +36,8 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void mouse_ih(){
+void (mouse_ih)(){
+    mouse_get_data(&pp, WAIT);
 }
 
 int (mouse_test_packet)(uint32_t cnt) {
@@ -38,12 +45,37 @@ int (mouse_test_packet)(uint32_t cnt) {
     mouse_hook_id = 0;
 
     // local variables
+    int ipc_status;
+    message msg;
     uint8_t mouse_bit_no = 0;
+    uint32_t mask = BIT(mouse_bit_no);
+
     int flag = mouse_subscribe_int(&mouse_bit_no);
     if (flag) return flag;
 
     while (cnt){
-        
+        flag = driver_receive(ANY, &msg, &ipc_status);
+        if (flag){
+          printf("driver_receive failed with: %d", flag);
+          continue;
+        }
+
+        if (!is_ipc_notify(ipc_status)) continue;
+
+        switch (_ENDPOINT_P(msg.m_source)){
+            case HARDWARE : {
+                bool subscribedInt = msg.m_notify.interrupts & mask;
+                if (!subscribedInt) break;
+
+                mouse_ih();
+                if (counter < 3) break;
+
+                --cnt;
+                flag = mouse_print_packet(&pp);
+                counter = 0;
+            }
+            default : break;
+        }
     }
 
     return mouse_unsubscribe_int();

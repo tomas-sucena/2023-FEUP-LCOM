@@ -11,7 +11,7 @@
 
 int kbd_hook_id, timer_hook_id;
 uint32_t sysinb_calls, ticks_left;
-struct obf_data data;
+struct kbd_data data;
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void kbd_ih(){
+void (kbd_ih)(){
     kbd_get_scancode(&data, WAIT);
 }
 
@@ -50,7 +50,7 @@ int(kbd_test_scan)() {
     int ipc_status;
     message msg;
     uint8_t bit_no = 0;
-    uint8_t mask = BIT(bit_no);
+    uint32_t mask = BIT(bit_no);
 
     int flag = kbd_subscribe_int(&bit_no);
     if (flag) return flag;
