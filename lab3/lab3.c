@@ -7,6 +7,8 @@
 
 #include "keyboard.h"
 
+#define WAIT 5
+
 int kbd_hook_id, timer_hook_id;
 uint32_t sysinb_calls, ticks_left;
 struct obf_data data;
@@ -36,7 +38,7 @@ int main(int argc, char *argv[]) {
 }
 
 void kbd_ih(){
-    kbd_get_scancode(&data);
+    kbd_get_scancode(&data, WAIT);
 }
 
 int(kbd_test_scan)() {
@@ -114,7 +116,7 @@ int(kbd_test_poll)() {
         index = 0;
     }
 
-    int flag = kbd_enable_int();
+    int flag = kbd_enable_int(WAIT);
     if (flag) return flag;
 
     return kbd_print_no_sysinb(sysinb_calls);

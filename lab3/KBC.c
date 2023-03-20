@@ -42,15 +42,16 @@ bool (kbc_can_read)(){
     return kbc_parse_status(st).obf_full;
 }
 
-int (kbc_read_obf)(uint8_t* data, int timeout){
+int (kbc_read_obf)(uint8_t* data, int wait_seconds){
     if (data == NULL) return 1;
+    wait_seconds *= 60;
 
-    while (timeout && !kbc_can_write()){
-        --timeout;
+    while (wait_seconds && !kbc_can_read()){
+        --wait_seconds;
         tickdelay(micros_to_ticks(DELAY_US));
     }
 
-    if (!timeout) return 1;
+    if (!wait_seconds) return 1;
 
     uint8_t st = 0;
     int flag = kbc_get_status(&st);
@@ -64,18 +65,19 @@ int (kbc_read_obf)(uint8_t* data, int timeout){
     return (status.parity_error || status.timeout_error || status.mouse_data);
 }
 
-int (kbc_get_command)(uint8_t* command, int timeout){
+int (kbc_get_command)(uint8_t* command, int wait_seconds){
     if (command == NULL) return 1;
+    wait_seconds *= 60;
 
     int flag;
-    while (timeout && !kbc_can_write()){
-        --timeout;
+    while (wait_seconds && !kbc_can_write()){
+        --wait_seconds;
         
         flag = tickdelay(micros_to_ticks(DELAY_US));
         if (flag) return flag;
     }
 
-    if (!timeout) return 1;
+    if (!wait_seconds) return 1;
 
     // notify the KBC that we want to read the command byte
     flag = sys_outb(KBC_COMMAND_REG, KBC_READ);
@@ -85,38 +87,39 @@ int (kbc_get_command)(uint8_t* command, int timeout){
     return util_sys_inb(KBC_OBF, command);
 }
 
-int (kbc_write_command)(uint8_t command, int timeout){
+int (kbc_write_command)(uint8_t command, int wait_seconds){
     int flag;
+    wait_seconds *= 60;
 
     // notify the KBC that we want to write a new command byte
-    int temp = timeout;
-    while (timeout && !kbc_can_write()){
-        --timeout;
+    int temp = wait_seconds;
+    while (wait_seconds && !kbc_can_write()){
+        --wait_seconds;
         
         flag = tickdelay(micros_to_ticks(DELAY_US));
         if (flag) return flag;
     }
         
-    if (!timeout) return 1;
+    if (!wait_seconds) return 1;
 
     flag = sys_outb(KBC_COMMAND_REG, KBC_WRITE);
     if (flag) return flag;
 
     // write the new command byte
-    timeout = temp;
-    while (timeout && !kbc_can_write()){
-        --timeout;
+    wait_seconds = temp;
+    while (wait_seconds && !kbc_can_write()){
+        --wait_seconds;
         
         flag = tickdelay(micros_to_ticks(DELAY_US));
         if (flag) return flag;
     }
         
-    if (!timeout) return 1;
+    if (!wait_seconds) return 1;
 
     return sys_outb(KBC_IBF, command);
 }
 
-int (kbc_enable_int)(){
+int (kbc_enable_int)(int wait_seconds){
     uint8_t command = 0;
 
     // read the command byte

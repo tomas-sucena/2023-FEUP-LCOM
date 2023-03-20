@@ -20,10 +20,10 @@ struct obf_data {
 };
 
 // for interrupts
+int (kbd_enable_int)(int wait_seconds);
 int (kbd_subscribe_int)(uint8_t *bit_no);
 int (kbd_unsubscribe_int)();
-int (kbd_enable_int)();
 
-void (kbd_get_scancode)(struct obf_data* data);
+void (kbd_get_scancode)(struct obf_data* data, int wait_seconds);
 
 #endif // _LCOM_KEYBOARD_H_

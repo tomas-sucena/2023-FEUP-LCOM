@@ -22,9 +22,9 @@ struct kbc_status (kbc_parse_status)(uint8_t status);
 bool (kbc_can_write)();
 bool (kbc_can_read)();
 
-int (kbc_read_obf)(uint8_t* data, int timeout);
-int (kbc_get_command)(uint8_t* command, int timeout);
-int (kbc_write_command)(uint8_t command, int timeout);
-int (kbc_enable_int)();
+int (kbc_read_obf)(uint8_t* data, int wait_seconds);
+int (kbc_get_command)(uint8_t* command, int wait_seconds);
+int (kbc_write_command)(uint8_t command, int wait_seconds);
+int (kbc_enable_int)(int wait_seconds);
 
 #endif // _LCOM_KBC_H_
