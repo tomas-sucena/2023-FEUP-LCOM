@@ -17,10 +17,12 @@ struct kbc_status {
 };
 
 // OBF functions
-int (kbc_get_status)(uint8_t* status);
-struct kbc_status (kbc_parse_status)(uint8_t status);
-bool (kbc_can_write)();
-bool (kbc_can_read)();
+int (kbc_get_status)(uint8_t* st);
+struct kbc_status (kbc_parse_status)(uint8_t st);
+bool (kbc_can_write)(uint8_t *st);
+bool (kbc_can_read)(uint8_t *st);
+int (kbc_delay_write)(int wait_seconds, uint8_t *st);
+int (kbc_delay_read)(int wait_seconds, uint8_t *st);
 
 int (kbc_read_obf)(uint8_t* data, int wait_seconds);
 int (kbc_get_command)(uint8_t* command, int wait_seconds);

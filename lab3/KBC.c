@@ -24,37 +24,51 @@ struct kbc_status (kbc_parse_status)(uint8_t st){
     return status;
 }
 
-bool (kbc_can_write)(){
-    uint8_t st = 0;
-
-    int flag = kbc_get_status(&st);
+bool (kbc_can_write)(uint8_t* st){
+    int flag = kbc_get_status(st);
     if (flag) return flag;
 
-    return !kbc_parse_status(st).ibf_full;
+    return !kbc_parse_status(*st).ibf_full;
 }
 
-bool (kbc_can_read)(){
-    uint8_t st = 0;
-
-    int flag = kbc_get_status(&st);
+bool (kbc_can_read)(uint8_t *st){
+    int flag = kbc_get_status(st);
     if (flag) return flag;
 
-    return kbc_parse_status(st).obf_full;
+    return kbc_parse_status(*st).obf_full;
+}
+
+int (kbc_delay_write)(int wait_seconds, uint8_t *st){
+    wait_seconds *= 60;
+
+    while (wait_seconds && !kbc_can_write(st)){
+        --wait_seconds;
+        
+        int flag = tickdelay(micros_to_ticks(DELAY_US));
+        if (flag) return flag;
+    }
+
+    return !wait_seconds;
+}
+
+int (kbc_delay_read)(int wait_seconds, uint8_t* st){
+    wait_seconds *= 60;
+    
+    while (wait_seconds && !kbc_can_read(st)){
+        --wait_seconds;
+
+        int flag = tickdelay(micros_to_ticks(DELAY_US));
+        if (flag) return flag;
+    }
+
+    return !wait_seconds;
 }
 
 int (kbc_read_obf)(uint8_t* data, int wait_seconds){
     if (data == NULL) return 1;
-    wait_seconds *= 60;
-
-    while (wait_seconds && !kbc_can_read()){
-        --wait_seconds;
-        tickdelay(micros_to_ticks(DELAY_US));
-    }
-
-    if (!wait_seconds) return 1;
 
     uint8_t st = 0;
-    int flag = kbc_get_status(&st);
+    int flag = kbc_delay_read(wait_seconds, &st);
     if (flag) return flag;
 
     ++sysinb_calls;
@@ -67,20 +81,17 @@ int (kbc_read_obf)(uint8_t* data, int wait_seconds){
 
 int (kbc_get_command)(uint8_t* command, int wait_seconds){
     if (command == NULL) return 1;
-    wait_seconds *= 60;
-
-    int flag;
-    while (wait_seconds && !kbc_can_write()){
-        --wait_seconds;
-        
-        flag = tickdelay(micros_to_ticks(DELAY_US));
-        if (flag) return flag;
-    }
-
-    if (!wait_seconds) return 1;
 
     // notify the KBC that we want to read the command byte
+    uint8_t st;
+    int flag = kbc_delay_write(wait_seconds, &st);
+    if (flag) return flag;
+
     flag = sys_outb(KBC_COMMAND_REG, KBC_READ);
+    if (flag) return flag;
+    
+    // read the command byte
+    flag = kbc_delay_read(wait_seconds, &st);
     if (flag) return flag;
 
     ++sysinb_calls;
@@ -88,33 +99,18 @@ int (kbc_get_command)(uint8_t* command, int wait_seconds){
 }
 
 int (kbc_write_command)(uint8_t command, int wait_seconds){
-    int flag;
-    wait_seconds *= 60;
+    uint8_t st;
 
     // notify the KBC that we want to write a new command byte
-    int temp = wait_seconds;
-    while (wait_seconds && !kbc_can_write()){
-        --wait_seconds;
-        
-        flag = tickdelay(micros_to_ticks(DELAY_US));
-        if (flag) return flag;
-    }
-        
-    if (!wait_seconds) return 1;
+    int flag = kbc_delay_write(wait_seconds, &st);
+    if (flag) return flag;
 
     flag = sys_outb(KBC_COMMAND_REG, KBC_WRITE);
     if (flag) return flag;
 
     // write the new command byte
-    wait_seconds = temp;
-    while (wait_seconds && !kbc_can_write()){
-        --wait_seconds;
-        
-        flag = tickdelay(micros_to_ticks(DELAY_US));
-        if (flag) return flag;
-    }
-        
-    if (!wait_seconds) return 1;
+    flag = kbc_delay_write(wait_seconds, &st);
+    if (flag) return flag;
 
     return sys_outb(KBC_IBF, command);
 }
