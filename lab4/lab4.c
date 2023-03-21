@@ -8,9 +8,10 @@
 
 #define WAIT 5
 
-int mouse_hook_id;
+int mouse_hook_id, timer_hook_id;
 struct packet pp;
 uint8_t counter;
+uint32_t ticks_left;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -43,6 +44,7 @@ void (mouse_ih)(){
 int (mouse_test_packet)(uint32_t cnt) {
     // global variables
     mouse_hook_id = 0;
+    counter = 0;
 
     // local variables
     int ipc_status;
@@ -50,7 +52,7 @@ int (mouse_test_packet)(uint32_t cnt) {
     uint8_t mouse_bit_no = 0;
     uint32_t mask = BIT(mouse_bit_no);
 
-    int flag = mouse_enable_stream_mode(WAIT);
+    int flag = mouse_enable_data_report(WAIT);
     if (flag) return flag;
 
     flag = mouse_subscribe_int(&mouse_bit_no);
@@ -86,13 +88,73 @@ int (mouse_test_packet)(uint32_t cnt) {
     flag = mouse_unsubscribe_int();
     if (flag) return flag;
 
-    return mouse_disable_stream_mode(WAIT);
+    return mouse_disable_data_report(WAIT);
 }
 
 int (mouse_test_async)(uint8_t idle_time) {
-    /* To be completed */
-    printf("%s(%u): under construction\n", __func__, idle_time);
-    return 1;
+    // global variables
+    mouse_hook_id = 0;
+    timer_hook_id = 1;
+    counter = 0;
+    ticks_left = idle_time * 60;
+
+    // local variables
+    int ipc_status;
+    message msg;
+    uint8_t mouse_bit_no = 0, timer_bit_no = 0;
+
+    int flag = mouse_enable_data_report(WAIT);
+    if (flag) return flag;
+
+    flag = mouse_subscribe_int(&mouse_bit_no);
+    if (flag) return flag;
+
+    flag = timer_subscribe_int(&timer_bit_no);
+    if (flag){
+        mouse_unsubscribe_int();
+        return flag;
+    }
+
+    uint32_t mouse_mask = BIT(mouse_bit_no);
+    uint32_t timer_mask = BIT(timer_bit_no);
+
+    while (ticks_left){
+        flag = driver_receive(ANY, &msg, &ipc_status);
+        if (flag){
+            printf("driver_receive failed with: %d", flag);
+            continue;
+        }
+
+        if (!is_ipc_notify(ipc_status)) continue;
+
+        switch (_ENDPOINT_P(msg.m_source)){
+            case HARDWARE : {
+                bool timerInt = msg.m_notify.interrupts & timer_mask;
+                if (timerInt) timer_int_handler();
+
+                bool mouseInt = msg.m_notify.interrupts & mouse_mask;
+                if (!mouseInt) break;
+
+                mouse_ih();
+                if (counter < 3) break;
+
+                mouse_parse_packet(&pp);
+                mouse_print_packet(&pp);
+
+                counter = 0;
+                ticks_left = idle_time * 60;
+            }
+            default : break;
+        }
+    }    
+    
+    flag = timer_unsubscribe_int();
+    if (flag) return flag;    
+    
+    flag = mouse_unsubscribe_int();
+    if (flag) return flag;
+
+    return mouse_disable_data_report(WAIT);
 }
 
 int (mouse_test_gesture)(uint8_t x_len, uint8_t tolerance) {

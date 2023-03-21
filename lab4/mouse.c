@@ -18,7 +18,7 @@ int (mouse_unsubscribe_int)(){
     return sys_irqrmpolicy(&mouse_hook_id);
 }
 
-int (mouse_enable_stream_mode)(int wait_ticks){
+int (mouse_enable_data_report)(int wait_ticks){
     uint8_t ack = 0;
     while (ack != MOUSE_SUCCESS_BYTE){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
@@ -35,7 +35,7 @@ int (mouse_enable_stream_mode)(int wait_ticks){
     return 0;
 }
 
-int (mouse_disable_stream_mode)(int wait_ticks){
+int (mouse_disable_data_report)(int wait_ticks){
     uint8_t ack = 0;
     while (ack != MOUSE_SUCCESS_BYTE){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);

@@ -140,8 +140,8 @@ int(kbd_test_timed_scan)(uint8_t idle) {
     flag = kbd_subscribe_int(&kbd_bit_no);
     if (flag) return flag;
 
-    uint8_t timer_mask = BIT(timer_bit_no);
-    uint8_t kbd_mask = BIT(kbd_bit_no);
+    uint32_t timer_mask = BIT(timer_bit_no);
+    uint32_t kbd_mask = BIT(kbd_bit_no);
 
     int ipc_status;
     message msg;
