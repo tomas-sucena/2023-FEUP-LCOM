@@ -6,7 +6,7 @@
 extern int kbd_hook_id;
 
 int (kbd_enable_int)(int wait_ticks){
-    return kbc_enable_int(wait_ticks);
+    return kbc_enable_kbd_int(wait_ticks);
 }
 
 int (kbd_subscribe_int)(uint8_t* bit_no){

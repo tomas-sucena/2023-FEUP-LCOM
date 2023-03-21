@@ -23,14 +23,16 @@ bool (kbc_can_write)(){
     int flag = kbc_get_status();
     if (flag) return flag;
 
-    return !kbc_parse_status().ibf_full;
+    // check if the IBF is not full
+    return !(st & KBC_IBF_FULL);
 }
 
 bool (kbc_can_read)(){
     int flag = kbc_get_status();
     if (flag) return flag;
 
-    return kbc_parse_status().obf_full;
+    // check if the OBF is full
+    return (st & KBC_OBF_FULL);
 }
 
 int (kbc_delay_write)(int wait_ticks){
@@ -64,6 +66,13 @@ int (kbc_read_obf)(uint8_t* data, int wait_ticks){
     return util_sys_inb(KBC_OBF, data);
 }
 
+int (kbc_write_ibf)(uint8_t data, int wait_ticks){
+    int flag = kbc_delay_write(wait_ticks);
+    if (flag) return flag;
+
+    return sys_outb(KBC_IBF, data);
+}
+
 int (kbc_write_command)(uint8_t command, int wait_ticks){
     int flag = kbc_delay_write(wait_ticks);
     if (flag) return flag;
@@ -79,39 +88,26 @@ int (kbc_get_command_byte)(uint8_t* command, int wait_ticks){
     if (flag) return flag;
 
     // read the command byte
-    flag = kbc_delay_read(wait_ticks);
-    if (flag) return flag;
-
     return kbc_read_obf(command, wait_ticks);
 }
 
 int (kbc_set_command_byte)(uint8_t command, int wait_ticks){
     // notify the KBC that we want to write a new command byte
-    int flag = kbc_delay_write(wait_ticks);
-    if (flag) return flag;
-
-    flag = sys_outb(KBC_COMMAND_REG, KBC_WRITE);
+    int flag = kbc_write_command(KBC_WRITE, wait_ticks);
     if (flag) return flag;
 
     // write the new command byte
-    flag = kbc_delay_write(wait_ticks);
-    if (flag) return flag;
-
-    return sys_outb(KBC_IBF, command);
+    return kbc_write_ibf(command, wait_ticks);
 }
 
-int (kbc_enable_int)(int wait_ticks){
+int (kbc_enable_kbd_int)(int wait_ticks){
     uint8_t command = 0;
 
     // read the command byte
-    int flag = kbc_get_command_byte(&command, wait_ticks);
+    int flag = kbc_get_command_byte(&command, 5);
     if (flag) return flag;
 
     // enable interrupts
     command |= KBC_ENABLE_KBD_INT;
-    return kbc_set_command_byte(command, wait_ticks);
-}
-
-int (kbc_get_mouse_byte)(uint8_t* byte, int wait_ticks){
-    return 0; 
+    return kbc_set_command_byte(command, 5);
 }

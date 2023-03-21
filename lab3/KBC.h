@@ -8,6 +8,8 @@
 #define KBC_READ 0x20
 #define KBC_WRITE 0x60
 #define KBC_FORWARD_TO_MOUSE 0xD4
+#define KBC_ENABLE 0xF4
+#define KBC_DISABLE 0xF5
 
 #define DELAY_US 20000
 
@@ -39,6 +41,6 @@ int (kbc_read_obf)(uint8_t* data, int wait_ticks);
 int (kbc_write_ibf)(uint8_t data, int wait_ticks);
 
 // keyboard functions
-int (kbc_enable_int)(int wait_ticks);
+int (kbc_enable_kbd_int)(int wait_ticks);
 
 #endif // _LCOM_KBC_H_

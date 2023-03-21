@@ -8,9 +8,10 @@
 /* IRQ */
 #define MOUSE_IRQ 12
 
-#define SUCCESS_BYTE 0xFA
-#define ERROR_BYTE 0xFE
-#define TWICE_ERROR_BYTE 0xFC
+/* ACKNOWLEDGEMENT BYTES */
+#define MOUSE_SUCCESS_BYTE 0xFA
+#define MOUSE_ERROR_BYTE 0xFE
+#define MOUSE_TWICE_ERROR_BYTE 0xFC
 
 #define is_first_byte(byte) (byte & BIT(3))
 #define sign_extend(byte) (0xFF00 | byte)
@@ -26,6 +27,8 @@
 
 int (mouse_subscribe_int)(uint8_t* bit_no);
 int (mouse_unsubscribe_int)();
+int (mouse_enable_stream_mode)(int wait_ticks);
+int (mouse_disable_stream_mode)(int wait_ticks);
 
 void (mouse_get_data)(struct packet* pp, int wait_ticks);
 void (mouse_parse_packet)(struct packet* pp);

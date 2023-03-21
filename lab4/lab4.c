@@ -50,7 +50,7 @@ int (mouse_test_packet)(uint32_t cnt) {
     uint8_t mouse_bit_no = 0;
     uint32_t mask = BIT(mouse_bit_no);
 
-    int flag = mouse_enable_data_reporting();
+    int flag = mouse_enable_stream_mode(WAIT);
     if (flag) return flag;
 
     flag = mouse_subscribe_int(&mouse_bit_no);
@@ -83,7 +83,10 @@ int (mouse_test_packet)(uint32_t cnt) {
         }
     }
 
-    return mouse_unsubscribe_int();
+    flag = mouse_unsubscribe_int();
+    if (flag) return flag;
+
+    return mouse_disable_stream_mode(WAIT);
 }
 
 int (mouse_test_async)(uint8_t idle_time) {

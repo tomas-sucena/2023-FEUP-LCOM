@@ -18,6 +18,40 @@ int (mouse_unsubscribe_int)(){
     return sys_irqrmpolicy(&mouse_hook_id);
 }
 
+int (mouse_enable_stream_mode)(int wait_ticks){
+    uint8_t ack = 0;
+    while (ack != MOUSE_SUCCESS_BYTE){
+        int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
+        if (flag) return flag;
+
+        flag = kbc_write_ibf(KBC_ENABLE, wait_ticks);
+        if (flag) return flag;
+
+        // read the acknowledgement byte
+        flag = kbc_read_obf(&ack, wait_ticks);
+        if (flag) return flag;
+    }
+
+    return 0;
+}
+
+int (mouse_disable_stream_mode)(int wait_ticks){
+    uint8_t ack = 0;
+    while (ack != MOUSE_SUCCESS_BYTE){
+        int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
+        if (flag) return flag;
+
+        flag = kbc_write_ibf(KBC_DISABLE, wait_ticks);
+        if (flag) return flag;
+
+        // read the acknowledgement byte
+        flag = kbc_read_obf(&ack, wait_ticks);
+        if (flag) return flag;
+    }
+
+    return 0;
+}
+
 void (mouse_get_data)(struct packet* pp, int wait_ticks){
     uint8_t data = 0;
     kbc_read_obf(&data, wait_ticks);
