@@ -50,10 +50,10 @@ int (mouse_test_packet)(uint32_t cnt) {
     uint8_t mouse_bit_no = 0;
     uint32_t mask = BIT(mouse_bit_no);
 
-    int flag = mouse_subscribe_int(&mouse_bit_no);
+    int flag = mouse_enable_data_reporting();
     if (flag) return flag;
 
-    flag = mouse_enable_data_reporting();
+    flag = mouse_subscribe_int(&mouse_bit_no);
     if (flag) return flag;
 
     while (cnt){

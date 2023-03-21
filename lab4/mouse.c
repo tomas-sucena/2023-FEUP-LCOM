@@ -18,9 +18,9 @@ int (mouse_unsubscribe_int)(){
     return sys_irqrmpolicy(&mouse_hook_id);
 }
 
-void (mouse_get_data)(struct packet* pp, int wait_seconds){
+void (mouse_get_data)(struct packet* pp, int wait_ticks){
     uint8_t data = 0;
-    kbc_read_obf(&data, wait_seconds);
+    kbc_read_obf(&data, wait_ticks);
 
     // check if there were any errors
     struct kbc_status status = kbc_parse_status();
