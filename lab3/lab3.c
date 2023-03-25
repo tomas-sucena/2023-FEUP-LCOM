@@ -123,8 +123,6 @@ int(kbd_test_poll)() {
 }
 
 int(kbd_test_timed_scan)(uint8_t idle) {
-    if (idle < 0) return 1;
-
     // global variables
     timer_hook_id = 0;
     kbd_hook_id = 1;
