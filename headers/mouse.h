@@ -34,10 +34,10 @@ enum mouse_state {
 
 int (mouse_subscribe_int)(uint8_t* bit_no);
 int (mouse_unsubscribe_int)();
-int (mouse_enable_data_report)(int wait_ticks);
-int (mouse_disable_data_report)(int wait_ticks);
+int (mouse_enable_data_report)(uint32_t wait_ticks);
+int (mouse_disable_data_report)(uint32_t wait_ticks);
 
-void (mouse_get_data)(struct packet* pp, int wait_ticks);
+void (mouse_get_data)(struct packet* pp, uint32_t wait_ticks);
 void (mouse_parse_packet)(struct packet* pp);
 
 #endif // _LCOM_MOUSE_H_

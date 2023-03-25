@@ -5,7 +5,7 @@
 
 extern int kbd_hook_id;
 
-int (kbd_enable_int)(int wait_ticks){
+int (kbd_enable_int)(uint32_t wait_ticks){
     return kbc_enable_kbd_int(wait_ticks);
 }
 
@@ -20,7 +20,7 @@ int (kbd_unsubscribe_int)(){
     return sys_irqrmpolicy(&kbd_hook_id);
 }
 
-void (kbd_get_scancode)(struct kbd_data* data, int wait_ticks){
+void (kbd_get_scancode)(struct kbd_data* data, uint32_t wait_ticks){
     kbc_read_obf(&data->scancode, wait_ticks);
     struct kbc_status status = kbc_parse_status();
 

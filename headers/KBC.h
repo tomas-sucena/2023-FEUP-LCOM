@@ -28,19 +28,19 @@ int (kbc_get_status)();
 struct kbc_status (kbc_parse_status)();
 bool (kbc_can_write)();
 bool (kbc_can_read)();
-int (kbc_delay_write)(int wait_ticks);
-int (kbc_delay_read)(int wait_ticks);
+int (kbc_delay_write)(uint32_t wait_ticks);
+int (kbc_delay_read)(uint32_t wait_ticks);
 
 // command byte functions
-int (kbc_write_command)(uint8_t command, int wait_ticks);
-int (kbc_get_command_byte)(uint8_t* command, int wait_ticks);
-int (kbc_set_command_byte)(uint8_t command, int wait_ticks);
+int (kbc_write_command)(uint8_t command, uint32_t wait_ticks);
+int (kbc_get_command_byte)(uint8_t* command, uint32_t wait_ticks);
+int (kbc_set_command_byte)(uint8_t command, uint32_t wait_ticks);
 
 // I/O buffer functions
-int (kbc_read_obf)(uint8_t* data, int wait_ticks);
-int (kbc_write_ibf)(uint8_t data, int wait_ticks);
+int (kbc_read_obf)(uint8_t* data, uint32_t wait_ticks);
+int (kbc_write_ibf)(uint8_t data, uint32_t wait_ticks);
 
 // keyboard functions
-int (kbc_enable_kbd_int)(int wait_ticks);
+int (kbc_enable_kbd_int)(uint32_t wait_ticks);
 
 #endif // _LCOM_KBC_H_

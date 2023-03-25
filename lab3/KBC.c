@@ -38,7 +38,7 @@ bool (kbc_can_read)(){
     return (st & KBC_OBF);
 }
 
-int (kbc_delay_write)(int wait_ticks){
+int (kbc_delay_write)(uint32_t wait_ticks){
     while (wait_ticks && !kbc_can_write()){
         --wait_ticks;
         
@@ -49,7 +49,7 @@ int (kbc_delay_write)(int wait_ticks){
     return !wait_ticks;
 }
 
-int (kbc_delay_read)(int wait_ticks){
+int (kbc_delay_read)(uint32_t wait_ticks){
     while (wait_ticks && !kbc_can_read()){
         --wait_ticks;
 
@@ -60,7 +60,7 @@ int (kbc_delay_read)(int wait_ticks){
     return !wait_ticks;
 }
 
-int (kbc_read_obf)(uint8_t* data, int wait_ticks){
+int (kbc_read_obf)(uint8_t* data, uint32_t wait_ticks){
     if (data == NULL) return 1;
 
     int flag = kbc_delay_read(wait_ticks);
@@ -70,21 +70,21 @@ int (kbc_read_obf)(uint8_t* data, int wait_ticks){
     return util_sys_inb(KBC_OUT_BUF, data);
 }
 
-int (kbc_write_ibf)(uint8_t data, int wait_ticks){
+int (kbc_write_ibf)(uint8_t data, uint32_t wait_ticks){
     int flag = kbc_delay_write(wait_ticks);
     if (flag) return flag;
 
     return sys_outb(KBC_IN_BUF, data);
 }
 
-int (kbc_write_command)(uint8_t command, int wait_ticks){
+int (kbc_write_command)(uint8_t command, uint32_t wait_ticks){
     int flag = kbc_delay_write(wait_ticks);
     if (flag) return flag;
 
     return sys_outb(KBC_COMMAND_REG, command);
 }
 
-int (kbc_get_command_byte)(uint8_t* command, int wait_ticks){
+int (kbc_get_command_byte)(uint8_t* command, uint32_t wait_ticks){
     if (command == NULL) return 1;
 
     // notify the KBC that we want to read the command byte
@@ -95,7 +95,7 @@ int (kbc_get_command_byte)(uint8_t* command, int wait_ticks){
     return kbc_read_obf(command, wait_ticks);
 }
 
-int (kbc_set_command_byte)(uint8_t command, int wait_ticks){
+int (kbc_set_command_byte)(uint8_t command, uint32_t wait_ticks){
     // notify the KBC that we want to write a new command byte
     int flag = kbc_write_command(KBC_WRITE, wait_ticks);
     if (flag) return flag;
@@ -104,7 +104,7 @@ int (kbc_set_command_byte)(uint8_t command, int wait_ticks){
     return kbc_write_ibf(command, wait_ticks);
 }
 
-int (kbc_enable_kbd_int)(int wait_ticks){
+int (kbc_enable_kbd_int)(uint32_t wait_ticks){
     uint8_t command = 0;
 
     // read the command byte
