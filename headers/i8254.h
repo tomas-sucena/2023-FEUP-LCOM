@@ -10,6 +10,8 @@
  */
 
 #define TIMER_FREQ 1193182 /**< @brief clock frequency for timer in PC and AT */
+#define is_valid_frequency(freq) (freq >= (TIMER_FREQ / 0xFFFF) && freq <= TIMER_FREQ) /**< @brief verifies if a value can be used to set the clock frequency */
+
 #define TIMER0_IRQ 0 /**< @brief Timer 0 IRQ line */
 
 /* I/O port addresses */
