@@ -16,8 +16,8 @@ struct kbc_status (kbc_parse_status)(){
     status.parity_error = (st & KBC_PARITY_ERROR);
     status.timeout_error = (st & KBC_TIMEOUT_ERROR);
     status.mouse_data = (st & KBC_MOUSE_DATA);
-    status.ibf_full = (st & KBC_IBF_FULL);
-    status.obf_full = (st & KBC_OBF_FULL);
+    status.ibf_full = (st & KBC_IBF);
+    status.obf_full = (st & KBC_OBF);
 
     return status;
 }
@@ -27,7 +27,7 @@ bool (kbc_can_write)(){
     if (flag) return flag;
 
     // check if the IBF is not full
-    return !(st & KBC_IBF_FULL);
+    return !(st & KBC_IBF);
 }
 
 bool (kbc_can_read)(){
@@ -35,7 +35,7 @@ bool (kbc_can_read)(){
     if (flag) return flag;
 
     // check if the OBF is full
-    return (st & KBC_OBF_FULL);
+    return (st & KBC_OBF);
 }
 
 int (kbc_delay_write)(int wait_ticks){
@@ -67,14 +67,14 @@ int (kbc_read_obf)(uint8_t* data, int wait_ticks){
     if (flag) return flag;
 
     ++sysinb_calls;
-    return util_sys_inb(KBC_OBF, data);
+    return util_sys_inb(KBC_OUT_BUF, data);
 }
 
 int (kbc_write_ibf)(uint8_t data, int wait_ticks){
     int flag = kbc_delay_write(wait_ticks);
     if (flag) return flag;
 
-    return sys_outb(KBC_IBF, data);
+    return sys_outb(KBC_IN_BUF, data);
 }
 
 int (kbc_write_command)(uint8_t command, int wait_ticks){

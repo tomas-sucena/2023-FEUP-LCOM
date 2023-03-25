@@ -7,15 +7,15 @@
 /* REGISTERS */
 #define KBC_STATUS_REG 0x64
 #define KBC_COMMAND_REG 0x64 // for writing KBC commands
-#define KBC_IBF 0x60
-#define KBC_OBF 0x60
+#define KBC_IN_BUF 0x60
+#define KBC_OUT_BUF 0x60
 
 /* KBC STATUS BITS */
 #define KBC_PARITY_ERROR BIT(7)
 #define KBC_TIMEOUT_ERROR BIT(6)
 #define KBC_MOUSE_DATA BIT(5)
-#define KBC_IBF_FULL BIT(1)
-#define KBC_OBF_FULL BIT(0)
+#define KBC_IBF BIT(1)
+#define KBC_OBF BIT(0)
 
 /* KBC COMMAND BITS */
 #define KBC_DISABLE_MOUSE BIT(5)

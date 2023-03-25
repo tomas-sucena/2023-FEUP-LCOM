@@ -4,9 +4,12 @@ PROG=lab3
 # source code files to be compiled
 SRCS = lab3.c keyboard.c KBC.c timer.c utils.c
 
+# header files to be included
+INC_DIR = ../headers
+
 # additional compilation flags
 # "-Wall -Wextra -Werror -I . -std=c11 -Wno-unused-parameter" are already set
-CFLAGS += -pedantic
+CFLAGS += -pedantic -I$(INC_DIR)
 CPPFLAGS += -D LAB3
 
 # list of library dependencies
