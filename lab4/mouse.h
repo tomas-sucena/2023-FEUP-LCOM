@@ -25,6 +25,13 @@
 #define MOUSE_RIGHT_BUTTON BIT(1)
 #define MOUSE_LEFT_BUTTON BIT(0)
 
+/* MOUSE STATE */
+enum mouse_state {
+    START,
+    DRAWING,
+    FINISHED
+};
+
 int (mouse_subscribe_int)(uint8_t* bit_no);
 int (mouse_unsubscribe_int)();
 int (mouse_enable_data_report)(int wait_ticks);

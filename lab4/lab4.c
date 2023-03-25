@@ -13,6 +13,16 @@ struct packet pp;
 uint8_t counter;
 uint32_t ticks_left;
 
+/* MOUSE GESTURE STATE MACHINE */
+/*enum logical_and_gesture {
+    RB_PRESSED, // 1
+    LEFT_LINE_DRAW, // 2
+    RB_RELEASED, // 3
+    LB_PRESSED, // 4
+    RIGHT_LINE_DRAW, // 5
+    LB_RELEASE // 6
+};*/
+
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
   lcf_set_language("EN-US");
@@ -158,9 +168,52 @@ int (mouse_test_async)(uint8_t idle_time) {
 }
 
 int (mouse_test_gesture)(uint8_t x_len, uint8_t tolerance) {
-    /* To be completed */
-    printf("%s: under construction\n", __func__);
-    return 1;
+    // global variables
+    mouse_hook_id = 0;
+    counter = 0;
+
+    // local variables
+    int ipc_status;
+    message msg;
+    uint8_t mouse_bit_no = 0;
+
+    int flag = mouse_enable_data_report(WAIT);
+    if (flag) return flag;
+
+    flag = mouse_subscribe_int(&mouse_bit_no);
+    if (flag) return flag;
+
+    uint32_t mouse_mask = BIT(mouse_bit_no);
+
+    enum mouse_state state = START;
+    while (state != FINISHED){
+        flag = driver_receive(ANY, &msg, &ipc_status);
+        if (flag){
+            printf("driver receive failed with: %d", flag);
+            continue;
+        }
+
+        if (!is_ipc_notify(ipc_status)) continue;
+
+        switch (_ENDPOINT_P(msg.m_source)){
+            case HARDWARE : {
+                bool mouseInt = msg.m_notify.interrupts & mouse_mask;
+                if (!mouseInt) break;
+
+                mouse_ih();
+                if (counter < 3) break;
+
+                mouse_parse_packet(&pp);
+                mouse_print_packet(&pp);
+            }
+            default : break;
+        }
+    }
+
+    flag = mouse_unsubscribe_int();
+    if (flag) return flag;
+
+    return mouse_disable_data_report(WAIT);
 }
 
 int (mouse_test_remote)(uint16_t period, uint8_t cnt) {
