@@ -98,15 +98,3 @@ int (kbc_set_command_byte)(uint8_t command, uint32_t wait_ticks){
     // write the new command byte
     return kbc_write_in_buf(command, wait_ticks);
 }
-
-int (kbc_enable_kbd_int)(uint32_t wait_ticks){
-    uint8_t command = 0;
-
-    // read the command byte
-    int flag = kbc_get_command_byte(&command, 5);
-    if (flag) return flag;
-
-    // enable interrupts
-    command |= KBC_ENABLE_KBD_INT;
-    return kbc_set_command_byte(command, 5);
-}

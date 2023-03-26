@@ -45,7 +45,4 @@ int (kbc_set_command_byte)(uint8_t command, uint32_t wait_ticks);
 int (kbc_read_out_buf)(uint8_t* data, uint32_t wait_ticks);
 int (kbc_write_in_buf)(uint8_t data, uint32_t wait_ticks);
 
-// keyboard functions
-int (kbc_enable_kbd_int)(uint32_t wait_ticks);
-
 #endif // _LCOM_KBC_H_
