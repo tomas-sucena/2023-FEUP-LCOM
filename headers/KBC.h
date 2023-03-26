@@ -4,14 +4,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* KBC COMMANDS */
-#define KBC_READ 0x20
-#define KBC_WRITE 0x60
-#define KBC_FORWARD_TO_MOUSE 0xD4
-#define KBC_ENABLE 0xF4
-#define KBC_DISABLE 0xF5
+#include "i8042.h"
 
 #define DELAY_US 20000
+
+/* KBC COMMANDS */
+// written to the command register
+#define KBC_GET_COMMAND 0x20
+#define KBC_SET_COMMAND 0x60
+#define KBC_FORWARD_TO_MOUSE 0xD4
+
+// written to the input buffer
+#define KBC_ENABLE_DATA_REPORT 0xF4
+#define KBC_DISABLE_DATA_REPORT 0xF5
 
 struct kbc_status {
     bool parity_error;

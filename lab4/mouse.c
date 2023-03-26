@@ -1,7 +1,6 @@
 #include <lcom/lcf.h>
 
 #include "mouse.h"
-#include "KBC.h"
 
 extern int mouse_hook_id;
 extern bool ih_error;
@@ -25,7 +24,7 @@ int (mouse_enable_data_report)(uint32_t wait_ticks){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
         if (flag) return flag;
 
-        flag = kbc_write_in_buf(KBC_ENABLE, wait_ticks);
+        flag = kbc_write_in_buf(KBC_ENABLE_DATA_REPORT, wait_ticks);
         if (flag) return flag;
 
         // read the acknowledgement byte
@@ -42,7 +41,7 @@ int (mouse_disable_data_report)(uint32_t wait_ticks){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
         if (flag) return flag;
 
-        flag = kbc_write_in_buf(KBC_DISABLE, wait_ticks);
+        flag = kbc_write_in_buf(KBC_DISABLE_DATA_REPORT, wait_ticks);
         if (flag) return flag;
 
         // read the acknowledgement byte

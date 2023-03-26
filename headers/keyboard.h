@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "KBC.h"
+
 /* IRQ */
 #define KBD_IRQ 1
 

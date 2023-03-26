@@ -1,7 +1,6 @@
 #include <lcom/lcf.h>
 
 #include "KBC.h"
-#include "i8042.h"
 
 extern uint32_t sysinb_calls;
 
@@ -88,7 +87,7 @@ int (kbc_get_command_byte)(uint8_t* command, uint32_t wait_ticks){
     if (command == NULL) return 1;
 
     // notify the KBC that we want to read the command byte
-    int flag = kbc_write_command(KBC_READ, wait_ticks);
+    int flag = kbc_write_command(KBC_GET_COMMAND, wait_ticks);
     if (flag) return flag;
 
     // read the command byte
@@ -97,7 +96,7 @@ int (kbc_get_command_byte)(uint8_t* command, uint32_t wait_ticks){
 
 int (kbc_set_command_byte)(uint8_t command, uint32_t wait_ticks){
     // notify the KBC that we want to write a new command byte
-    int flag = kbc_write_command(KBC_WRITE, wait_ticks);
+    int flag = kbc_write_command(KBC_SET_COMMAND, wait_ticks);
     if (flag) return flag;
 
     // write the new command byte

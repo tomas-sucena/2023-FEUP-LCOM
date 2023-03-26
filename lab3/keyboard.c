@@ -1,7 +1,6 @@
 #include <lcom/lcf.h>
 
 #include "keyboard.h"
-#include "KBC.h"
 
 extern int kbd_hook_id;
 extern bool ih_error;
