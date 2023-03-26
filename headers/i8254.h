@@ -1,61 +1,36 @@
 #ifndef _LCOM_I8254_H_
 #define _LCOM_I8254_H_
 
-#include <lcom/lcf.h>
+/* FREQUENCY */
+#define TIMER_FREQ 1193181
+#define is_valid_frequency(freq) (freq >= (TIMER_FREQ / 0xFFFF) && freq <= TIMER_FREQ)
 
-/** @defgroup i8254 i8254
- * @{
- *
- * Constants for programming the i8254 Timer. Needs to be completed.
- */
+/* I/O PORTS */
+#define TIMER(n) (0x40 + n) 
+#define TIMER_CTRL 0x43
 
-#define TIMER_FREQ 1193182 /**< @brief clock frequency for timer in PC and AT */
-#define is_valid_frequency(freq) (freq >= (TIMER_FREQ / 0xFFFF) && freq <= TIMER_FREQ) /**< @brief verifies if a value can be used to set the clock frequency */
-
-#define TIMER0_IRQ 0 /**< @brief Timer 0 IRQ line */
-
-/* I/O port addresses */
-
-#define TIMER(n)   (0x40 + n) 
-#define TIMER_0    0x40 /**< @brief Timer 0 count register */
-#define TIMER_1    0x41 /**< @brief Timer 1 count register */
-#define TIMER_2    0x42 /**< @brief Timer 2 count register */
-#define TIMER_CTRL 0x43 /**< @brief Control register */
-
-#define SPEAKER_CTRL 0x61 /**< @brief Register for speaker control  */
-
-/* Timer control */
-
-/* Timer selection: bits 7 and 6 */
-
+/* CONTROL WORD BITS */
+// counter selection
 #define TIMER_SEL(n) (n << 6)
-#define TIMER_SEL0   0x00              /**< @brief Control Word for Timer 0 */
-#define TIMER_SEL1   BIT(6)            /**< @brief Control Word for Timer 1 */
-#define TIMER_SEL2   BIT(7)            /**< @brief Control Word for Timer 2 */
-#define TIMER_RB_CMD (BIT(7) | BIT(6)) /**< @brief Read Back Command */
+#define get_timer(st) (st & (BIT(7) | BIT(6)) >> 6)
 
-/* Register selection: bits 5 and 4 */
+// counter initialization
+#define TIMER_LSB BIT(4)
+#define TIMER_MSB BIT(5)
+#define TIMER_LSB_MSB (TIMER_LSB | TIMER_MSB)
+#define get_count_init(st) ((st & TIMER_LSB_MSB) >> 4)
 
-#define TIMER_LSB     BIT(4)                  /**< @brief Initialize Counter LSB only */
-#define TIMER_MSB     BIT(5)                  /**< @brief Initialize Counter MSB only */
-#define TIMER_LSB_MSB (TIMER_LSB | TIMER_MSB) /**< @brief Initialize LSB first and MSB afterwards */
+// counting mode
+#define get_count_mode(st) ((st & 0xF) >> 1)
 
-/* Operating mode: bits 3, 2 and 1 */
+// base
+#define TIMER_BCD BIT(1)
+#define is_BCD(st) (st & BIT(0))
 
-#define TIMER_SQR_WAVE (BIT(2) | BIT(1)) /**< @brief Mode 3: square wave generator */
-#define TIMER_RATE_GEN BIT(2)            /**< @brief Mode 2: rate generator */
+/* READ-BACK COMMAND BITS */
+#define TIMER_RB (BIT(6) | BIT(7))
+#define TIMER_RB_COUNT BIT(5) // set low
+#define TIMER_RB_STATUS BIT(4) // set low
+#define TIMER_RB_SEL(n) BIT(n + 1)
 
-/* Counting mode: bit 0 */
-
-#define TIMER_BCD 0x01 /**< @brief Count in BCD */
-#define TIMER_BIN 0x00 /**< @brief Count in binary */
-
-/* READ-BACK COMMAND FORMAT */
-
-#define TIMER_RB_COUNT_  BIT(5)
-#define TIMER_RB_STATUS_ BIT(4)
-#define TIMER_RB_SEL(n)  BIT((n) + 1)
-
-/**@}*/
-
-#endif /* _LCOM_I8254_H */
+#endif // _LCOM_I8254_H_

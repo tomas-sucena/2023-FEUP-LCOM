@@ -5,13 +5,15 @@
 #include <stdio.h>
 
 #include "mouse.h"
+#include "timer.h"
 
 #define WAIT 5
 
 int mouse_hook_id, timer_hook_id;
+uint32_t ticks;
+bool ih_error;
 struct packet pp;
 uint8_t counter;
-uint32_t ticks_left;
 
 /* MOUSE GESTURE STATE MACHINE */
 /*enum logical_and_gesture {
@@ -83,6 +85,8 @@ int (mouse_test_packet)(uint32_t cnt) {
                 if (!subscribedInt) break;
 
                 mouse_ih();
+
+                if (ih_error) return ih_error;
                 if (counter < 3) break;
 
                 mouse_parse_packet(&pp);        
@@ -106,7 +110,7 @@ int (mouse_test_async)(uint8_t idle_time) {
     mouse_hook_id = 0;
     timer_hook_id = 1;
     counter = 0;
-    ticks_left = idle_time * 60;
+    ticks = idle_time * 60;
 
     // local variables
     int ipc_status;
@@ -128,7 +132,7 @@ int (mouse_test_async)(uint8_t idle_time) {
     uint32_t mouse_mask = BIT(mouse_bit_no);
     uint32_t timer_mask = BIT(timer_bit_no);
 
-    while (ticks_left){
+    while (ticks){
         flag = driver_receive(ANY, &msg, &ipc_status);
         if (flag){
             printf("driver_receive failed with: %d", flag);
@@ -146,13 +150,15 @@ int (mouse_test_async)(uint8_t idle_time) {
                 if (!mouseInt) break;
 
                 mouse_ih();
+
+                if (ih_error) return ih_error;
                 if (counter < 3) break;
 
                 mouse_parse_packet(&pp);
                 mouse_print_packet(&pp);
 
                 counter = 0;
-                ticks_left = idle_time * 60;
+                ticks = idle_time * 60;
             }
             default : break;
         }

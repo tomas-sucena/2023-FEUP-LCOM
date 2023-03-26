@@ -1,16 +1,17 @@
 #include <lcom/lcf.h>
-#include <lcom/timer.h>
 #include <lcom/lab3.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "keyboard.h"
+#include "timer.h"
 
 #define WAIT 5
 
 int kbd_hook_id, timer_hook_id;
-uint32_t sysinb_calls, ticks_left;
+uint32_t sysinb_calls, ticks;
+bool ih_error;
 struct kbd_data data;
 
 int main(int argc, char *argv[]) {
@@ -73,6 +74,8 @@ int(kbd_test_scan)() {
                 if (!subscribedInt) break;
 
                 kbd_ih();
+
+                if (ih_error) return ih_error;
                 if (!data.valid) break;
 
                 scancode[index] = data.scancode;
@@ -104,6 +107,8 @@ int(kbd_test_poll)() {
 
     while (data.scancode != KBD_ESC_BREAKCODE){
         kbd_ih();
+
+        if (ih_error) return ih_error;
         if (!data.valid) break;
 
         scancode[index] = data.scancode;
@@ -127,7 +132,7 @@ int(kbd_test_timed_scan)(uint8_t idle) {
     timer_hook_id = 0;
     kbd_hook_id = 1;
     sysinb_calls = 0;
-    ticks_left = idle * 60;
+    ticks = idle * 60;
 
     // local variables
     uint8_t timer_bit_no = 0;
@@ -146,7 +151,7 @@ int(kbd_test_timed_scan)(uint8_t idle) {
     uint8_t scancode[2];
     uint8_t index = 0;
     
-    while (data.scancode != KBD_ESC_BREAKCODE && ticks_left){
+    while (data.scancode != KBD_ESC_BREAKCODE && ticks){
         flag = driver_receive(ANY, &msg, &ipc_status);
         if (flag){
             printf("driver_receive failed with: %d", flag);
@@ -164,6 +169,8 @@ int(kbd_test_timed_scan)(uint8_t idle) {
                 if (!kbdInt) break;
 
                 kbd_ih();
+
+                if (ih_error) return ih_error;
                 if (!data.valid) break;
 
                 scancode[index] = data.scancode;
@@ -174,7 +181,7 @@ int(kbd_test_timed_scan)(uint8_t idle) {
 
                 kbd_print_scancode(is_makecode(scancode[index]), index + 1, scancode);
                 index = 0;
-                ticks_left = idle * 60;
+                ticks = idle * 60;
             }
             default : break;
         }

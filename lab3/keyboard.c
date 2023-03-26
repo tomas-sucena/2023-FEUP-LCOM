@@ -4,6 +4,7 @@
 #include "KBC.h"
 
 extern int kbd_hook_id;
+extern bool ih_error;
 
 int (kbd_enable_int)(uint32_t wait_ticks){
     return kbc_enable_kbd_int(wait_ticks);
@@ -21,7 +22,9 @@ int (kbd_unsubscribe_int)(){
 }
 
 void (kbd_get_scancode)(struct kbd_data* data, uint32_t wait_ticks){
-    kbc_read_obf(&data->scancode, wait_ticks);
+    ih_error = kbc_read_out_buf(&data->scancode, wait_ticks);
+    if (ih_error) return;
+
     struct kbc_status status = kbc_parse_status();
 
     data->valid = !(status.parity_error || status.timeout_error || status.mouse_data);

@@ -4,6 +4,7 @@
 #include "KBC.h"
 
 extern int mouse_hook_id;
+extern bool ih_error;
 extern struct packet pp;
 extern uint8_t counter;
 
@@ -24,11 +25,11 @@ int (mouse_enable_data_report)(uint32_t wait_ticks){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
         if (flag) return flag;
 
-        flag = kbc_write_ibf(KBC_ENABLE, wait_ticks);
+        flag = kbc_write_in_buf(KBC_ENABLE, wait_ticks);
         if (flag) return flag;
 
         // read the acknowledgement byte
-        flag = kbc_read_obf(&ack, wait_ticks);
+        flag = kbc_read_out_buf(&ack, wait_ticks);
         if (flag) return flag;
     }
 
@@ -41,11 +42,11 @@ int (mouse_disable_data_report)(uint32_t wait_ticks){
         int flag = kbc_write_command(KBC_FORWARD_TO_MOUSE, wait_ticks);
         if (flag) return flag;
 
-        flag = kbc_write_ibf(KBC_DISABLE, wait_ticks);
+        flag = kbc_write_in_buf(KBC_DISABLE, wait_ticks);
         if (flag) return flag;
 
         // read the acknowledgement byte
-        flag = kbc_read_obf(&ack, wait_ticks);
+        flag = kbc_read_out_buf(&ack, wait_ticks);
         if (flag) return flag;
     }
 
@@ -54,9 +55,11 @@ int (mouse_disable_data_report)(uint32_t wait_ticks){
 
 void (mouse_get_data)(struct packet* pp, uint32_t wait_ticks){
     uint8_t data = 0;
-    kbc_read_obf(&data, wait_ticks);
 
-    // check if there were any errors
+    ih_error = kbc_read_out_buf(&data, wait_ticks);
+    if (ih_error) return;
+
+    // check if the data read is valid
     struct kbc_status status = kbc_parse_status();
     if (status.parity_error || status.timeout_error || !status.mouse_data){
         counter = 0;
