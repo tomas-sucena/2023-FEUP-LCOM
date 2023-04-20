@@ -23,10 +23,7 @@ int video_set_mode(uint16_t mode){
     return flag;
 }
 
-int (video_start)(uint16_t mode){
-    int flag = video_set_mode(mode);
-    if (flag) return flag;
-    
+int (video_start)(uint16_t mode){    
     // allow memory mapping
     struct minix_mem_range mr;
     unsigned int vram_base = mode_info.PhysBasePtr;
@@ -35,17 +32,17 @@ int (video_start)(uint16_t mode){
     mr.mr_base = (phys_bytes) vram_base;	
     mr.mr_limit = mr.mr_base + vram_limit;
 
-    flag = sys_privctl(SELF, SYS_PRIV_ADD_MEM, &mr);
+    int flag = sys_privctl(SELF, SYS_PRIV_ADD_MEM, &mr);
     if (flag){
         panic("sys_privctl (ADD_MEM) failed: %d\n", flag);
         return flag;
     }
     
     // map memory
-    if ((video_mem = vm_map_phys(SELF, (void*) mr.mr_base, vram_limit)) == MAP_FAILED){
+    if ((video_mem = vm_map_phys(SELF, (void*) mr.mr_base, vram_limit)) == NULL){
         perror("Couldn't map video memory!");
         return -1;
     }
 
-    return 0;
+    return video_set_mode(mode);
 }
