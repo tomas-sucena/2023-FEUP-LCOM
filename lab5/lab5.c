@@ -96,25 +96,58 @@ int(video_test_init)(uint16_t mode, uint8_t delay) {
 
 int(video_test_rectangle)(uint16_t mode, uint16_t x, uint16_t y,
                           uint16_t width, uint16_t height, uint32_t color) {
-  int flag = video_start(mode);
-  if (flag) return disable_video(flag);
+	int flag = video_start(mode);
+	if (flag) return disable_video(flag);
 
-  // draw the rectangle
-  flag = video_draw_rectangle(x, y, width, height, color);
-  if (flag) return disable_video(flag);
+	// draw the rectangle
+	flag = video_draw_rectangle(x, y, width, height, color);
+	if (flag) return disable_video(flag);
 
-  flag = kbd_int_loop();
-  if (flag) return disable_video(flag);
+	flag = kbd_int_loop();
+	if (flag) return disable_video(flag);
 
-  return vg_exit();
+	return vg_exit();
 }
 
 int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, uint8_t step) {
-  /* To be completed */
-  printf("%s(0x%03x, %u, 0x%08x, %d): under construction\n", __func__,
-         mode, no_rectangles, first, step);
+	int flag = video_start(mode);
+	if (flag) return disable_video(flag);
 
-  return 1;
+	// check if any of the coordinates overflow
+	uint16_t painted_rows = mode_info.YResolution - mode_info.YResolution % no_rectangles;
+	uint16_t painted_cols = mode_info.XResolution - mode_info.XResolution % no_rectangles;
+
+	// draw the rectangles
+	uint16_t len = (painted_rows < painted_cols) ? (mode_info.YResolution / no_rectangles) 
+												 : (mode_info.XResolution / no_rectangles);
+	
+	uint16_t x = 0, y = 0;
+	for (int i = 0; i < no_rectangles; ++i){
+		flag = video_draw_rectangle(x, y, len, len, first);
+		if (flag) return flag;
+
+		x += len;
+		if (x < mode_info.XResolution) continue;
+		
+		x = 0;
+		y += len;
+	}
+
+	// draw the black stripes
+	for (int i = painted_rows; i < mode_info.YResolution; ++i){
+		flag = video_draw_row(0, i, mode_info.XResolution, 0);
+		if (flag) return disable_video(flag);
+	}
+
+	for (int i = painted_cols; i < mode_info.XResolution; ++i){
+		flag = video_draw_col(i, 0, mode_info.YResolution, 0);
+		if (flag) return disable_video(flag);
+	}
+
+	flag = kbd_int_loop();
+	if (flag) return disable_video(flag);
+
+	return vg_exit();
 }
 
 int(video_test_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
