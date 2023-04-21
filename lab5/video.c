@@ -63,11 +63,12 @@ int (video_draw_row)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
         len = mode_info.XResolution - x;
 
     uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
+    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
 
-    for (int i = 0; i < len; ++i){
-        uint32_t pixel_index = (y * mode_info.XResolution + x + i) * bytes_per_pixel;
+    while (len--){
         memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
-        
+        pixel_index += bytes_per_pixel;
+
         int flag = (video_mem == NULL);
         if (flag) return flag;
     }
@@ -83,10 +84,11 @@ int (video_draw_col)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
         len = mode_info.YResolution - y;
 
     uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
+    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
 
-    for (int i = 0; i < len; ++i){
-        uint32_t pixel_index = ((y + i) * mode_info.XResolution + x) * bytes_per_pixel;
+    while (len--){
         memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
+        pixel_index += mode_info.XResolution * bytes_per_pixel;
         
         int flag = (video_mem == NULL);
         if (flag) return flag;
