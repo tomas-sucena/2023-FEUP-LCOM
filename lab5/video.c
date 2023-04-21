@@ -2,10 +2,34 @@
 
 #include "video.h"
 
-void* video_mem;
+uint8_t* video_mem;
 extern vbe_mode_info_t mode_info;
 
-int video_set_mode(uint16_t mode){
+int (video_start)(uint16_t mode){
+    int flag = vbe_get_mode_info(mode, &mode_info);
+    if (flag) return flag;
+
+    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8; // rounding by excess
+    unsigned int vram_size = mode_info.XResolution * mode_info.YResolution * bytes_per_pixel;
+
+    struct minix_mem_range mr;
+    mr.mr_base = (phys_bytes) mode_info.PhysBasePtr;	
+    mr.mr_limit = mr.mr_base + vram_size;
+
+    // allow memory mapping
+    flag = sys_privctl(SELF, SYS_PRIV_ADD_MEM, &mr);
+    if (flag){
+        panic("sys_privctl (ADD_MEM) failed: %d\n", flag);
+        return flag;
+    }
+    
+    // map the video memory to the address space of the process
+    if ((video_mem = vm_map_phys(SELF, (void*) mr.mr_base, vram_size)) == NULL){
+        perror("Couldn't map video memory!");
+        return -1;
+    }
+
+    // change the video mode
     reg86_t reg86;
     memset(&reg86, 0, sizeof(reg86));
 
@@ -13,36 +37,72 @@ int video_set_mode(uint16_t mode){
     reg86.ax = 0x4F02;
     reg86.bx = mode | BIT(14);
 
-    int flag = sys_int86(&reg86);
-    if (flag){
+    flag = sys_int86(&reg86);
+    if (flag)
         printf("Initializing graphics mode 0x%x failed!\n", mode);
-        return flag;
-    }
-    
-    flag = vbe_get_mode_info(mode, &mode_info);
+
     return flag;
 }
 
-int (video_start)(uint16_t mode){    
-    // allow memory mapping
-    struct minix_mem_range mr;
-    unsigned int vram_base = mode_info.PhysBasePtr;
-    unsigned int vram_limit = mode_info.XResolution * mode_info.YResolution * mode_info.BitsPerPixel;
+int (video_draw_pixel)(uint16_t x, uint16_t y, uint32_t color){
+    if (x > mode_info.XResolution || y > mode_info.YResolution)
+        return 1;
 
-    mr.mr_base = (phys_bytes) vram_base;	
-    mr.mr_limit = mr.mr_base + vram_limit;
+    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
+    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
 
-    int flag = sys_privctl(SELF, SYS_PRIV_ADD_MEM, &mr);
-    if (flag){
-        panic("sys_privctl (ADD_MEM) failed: %d\n", flag);
-        return flag;
+    memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
+    return (video_mem == NULL);
+}
+
+int (video_draw_row)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
+    if (x > mode_info.XResolution || y > mode_info.YResolution)
+        return 1;
+
+    if (x + len > mode_info.XResolution)
+        len = mode_info.XResolution - x;
+
+    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
+
+    for (int i = 0; i < len; ++i){
+        uint32_t pixel_index = (y * mode_info.XResolution + x + i) * bytes_per_pixel;
+        memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
+        
+        int flag = (video_mem == NULL);
+        if (flag) return flag;
     }
     
-    // map memory
-    if ((video_mem = vm_map_phys(SELF, (void*) mr.mr_base, vram_limit)) == NULL){
-        perror("Couldn't map video memory!");
-        return -1;
+    return 0;
+}
+
+int (video_draw_col)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
+    if (x > mode_info.XResolution || y > mode_info.YResolution)
+        return 1;
+
+    if (y + len > mode_info.YResolution)
+        len = mode_info.YResolution - y;
+
+    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
+
+    for (int i = 0; i < len; ++i){
+        uint32_t pixel_index = ((y + i) * mode_info.XResolution + x) * bytes_per_pixel;
+        memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
+        
+        int flag = (video_mem == NULL);
+        if (flag) return flag;
+    }
+    
+    return 0;
+}
+
+int (video_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color){
+    if (y + height > mode_info.YResolution)
+        height = mode_info.YResolution - y;
+    
+    for (uint16_t i = 0; i < height; ++i){
+        int flag = video_draw_row(x, y + i, width, color);
+        if (flag) return flag;
     }
 
-    return video_set_mode(mode);
+    return 0;
 }

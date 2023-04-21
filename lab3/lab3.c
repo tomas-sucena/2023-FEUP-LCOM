@@ -43,7 +43,7 @@ void (kbd_ih)(){
 }
 
 int(kbd_test_scan)() {
-    // global variabes
+    // global variables
     kbd_hook_id = 0;
     sysinb_calls = 0;
     

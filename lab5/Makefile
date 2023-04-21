@@ -2,7 +2,7 @@
 PROG=lab5 
 
 # source code files to be compiled
-SRCS = lab5.c video.c utils.c
+SRCS = lab5.c video.c keyboard.c KBC.c utils.c
 
 # header files to be included
 INC_DIR = ../headers

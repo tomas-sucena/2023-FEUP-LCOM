@@ -5,9 +5,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "keyboard.h"
 #include "video.h"
 
+#define WAIT 5
+
 vbe_mode_info_t mode_info;
+int kbd_hook_id;
+bool ih_error;
+struct kbd_data data;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -33,23 +39,74 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+int disable_video(int flag){
+    vg_exit();
+    return flag;
+}
+
+int kbd_int_loop(){
+    // global variables
+    kbd_hook_id = 0;
+
+    // local variables
+    int ipc_status;
+    message msg;
+    uint8_t bit_no = 0;
+    uint32_t mask = BIT(bit_no);
+
+    int flag = kbd_subscribe_int(&bit_no);
+    if (flag) return flag;
+    
+    while (data.scancode != KBD_ESC_BREAKCODE){
+        flag = driver_receive(ANY, &msg, &ipc_status);
+        if (flag){
+            printf("driver_receive failed with: %d", flag);
+            continue;
+        }
+
+        if (!is_ipc_notify(ipc_status)) continue;
+
+        switch(_ENDPOINT_P(msg.m_source)){
+            case HARDWARE : {
+                bool subscribedInt = msg.m_notify.interrupts & mask;
+                if (!subscribedInt) break;
+
+                kbd_get_scancode(&data, WAIT);
+
+                if (ih_error) return ih_error;
+                if (!data.valid) break;
+            }
+            default : break;
+        }
+    }
+
+    return kbd_unsubscribe_int();
+}
+
 int(video_test_init)(uint16_t mode, uint8_t delay) {
   /* To be completed */
   int flag = video_start(mode);
-  if (flag) return flag;
+  if (flag) return disable_video(flag);
 
   flag = sleep(delay);
-  if (flag) return flag;
+  if (flag) return disable_video(flag);
 
   return vg_exit();
 }
 
 int(video_test_rectangle)(uint16_t mode, uint16_t x, uint16_t y,
                           uint16_t width, uint16_t height, uint32_t color) {
-  int flag = video_set_mode(mode);
-  if (flag) return flag;
+  int flag = video_start(mode);
+  if (flag) return disable_video(flag);
 
-  return 1;
+  // draw the rectangle
+  flag = video_draw_rectangle(x, y, width, height, color);
+  if (flag) return disable_video(flag);
+
+  flag = kbd_int_loop();
+  if (flag) return disable_video(flag);
+
+  return vg_exit();
 }
 
 int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, uint8_t step) {
