@@ -1,0 +1,7 @@
+.vscode/
+
+# MINIX output files
+*.o
+.gdbinit
+output.txt
+trace.txt
