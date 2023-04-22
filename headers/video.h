@@ -10,7 +10,7 @@
 #define GREEN(color) ((color & mode_info.green_mask) >> mode_info.green_begin)
 #define BLUE(color) ((color & mode_info.blue_mask) >> mode_info.blue_begin)
 
-struct video_mode_info {
+typedef struct {
     uint8_t mode;
     uint8_t memory_model;
     phys_bytes physical_base;
@@ -19,7 +19,7 @@ struct video_mode_info {
     uint32_t red_mask, green_mask, blue_mask;
     uint8_t red_begin, green_begin, blue_begin;
     uint8_t red_end, green_end, blue_end;
-};
+} video_mode_info;
 
 int (video_get_mode_info)(uint16_t mode);
 int (video_start)(uint16_t mode);

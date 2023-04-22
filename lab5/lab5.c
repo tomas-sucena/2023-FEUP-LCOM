@@ -10,10 +10,10 @@
 
 #define WAIT 5
 
-struct video_mode_info mode_info;
+video_mode_info mode_info;
 int kbd_hook_id;
 bool ih_error;
-struct kbd_data data;
+kbd_data data;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)

@@ -65,8 +65,8 @@ int (timer_get_status)(uint8_t timer, uint8_t *st){
     return util_sys_inb(TIMER(timer), st);
 }
 
-struct timer_status (timer_parse_status)(uint8_t st){
-    struct timer_status status;
+timer_status (timer_parse_status)(uint8_t st){
+    timer_status status;
 
     status.timer = get_timer(st);
 

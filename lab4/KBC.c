@@ -6,8 +6,8 @@ int (kbc_get_status)(){
     return util_sys_inb(KBC_STATUS_REG, &st);
 }
 
-struct kbc_status (kbc_parse_status)(){
-    struct kbc_status status;
+kbc_status (kbc_parse_status)(){
+    kbc_status status;
 
     status.parity_error = (st & KBC_PARITY_ERROR);
     status.timeout_error = (st & KBC_TIMEOUT_ERROR);

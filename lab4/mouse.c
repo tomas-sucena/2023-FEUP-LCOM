@@ -59,7 +59,7 @@ void (mouse_get_data)(struct packet* pp, uint32_t wait_ticks){
     if (ih_error) return;
 
     // check if the data read is valid
-    struct kbc_status status = kbc_parse_status();
+    kbc_status status = kbc_parse_status();
     if (status.parity_error || status.timeout_error || !status.mouse_data){
         counter = 0;
         return;

@@ -3,7 +3,7 @@
 #include "video.h"
 
 uint8_t* video_mem;
-extern struct video_mode_info mode_info;
+extern video_mode_info mode_info;
 
 int (video_get_mode_info)(uint16_t mode){
     vbe_mode_info_t vbe_info;

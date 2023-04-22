@@ -12,7 +12,7 @@
 int kbd_hook_id, timer_hook_id;
 uint32_t sysinb_calls, ticks;
 bool ih_error;
-struct kbd_data data;
+kbd_data data;
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)

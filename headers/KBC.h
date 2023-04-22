@@ -18,19 +18,19 @@
 #define KBC_ENABLE_DATA_REPORT 0xF4
 #define KBC_DISABLE_DATA_REPORT 0xF5
 
-struct kbc_status {
+typedef struct {
     bool parity_error;
     bool timeout_error;
     bool mouse_data;
     bool ibf_full;
     bool obf_full;
-};
+} kbc_status;
 
 static uint8_t st; // status
 
 // status functions
 int (kbc_get_status)();
-struct kbc_status (kbc_parse_status)();
+kbc_status (kbc_parse_status)();
 bool (kbc_can_write)();
 bool (kbc_can_read)();
 int (kbc_delay_write)(uint32_t wait_ticks);
