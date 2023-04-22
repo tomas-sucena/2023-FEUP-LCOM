@@ -15,24 +15,34 @@ int (video_get_mode_info)(uint16_t mode){
     mode_info.mode = mode;
     mode_info.memory_model = vbe_info.MemoryModel;
     mode_info.physical_base = vbe_info.PhysBasePtr;
+
     mode_info.bits_per_pixel = (phys_bytes) vbe_info.BitsPerPixel;
     mode_info.bytes_per_pixel = (mode_info.bits_per_pixel + 7) / 8; // rounding by excess
+
     mode_info.x_res = vbe_info.XResolution;
     mode_info.y_res = vbe_info.YResolution;
 
+    mode_info.red_begin = vbe_info.RedFieldPosition;
+    mode_info.green_begin = vbe_info.GreenFieldPosition;
+    mode_info.blue_begin = vbe_info.BlueFieldPosition;
+
+    mode_info.red_end = mode_info.red_begin + vbe_info.RedMaskSize;
+    mode_info.green_end = mode_info.green_begin + vbe_info.GreenMaskSize;
+    mode_info.blue_end = mode_info.blue_begin + vbe_info.BlueMaskSize;
+
     // create the color masks
-    mode_info.red = 0;
-    for (int i = vbe_info.RedFieldPosition; i < vbe_info.RedFieldPosition + vbe_info.RedMaskSize; ++i)
-        mode_info.red |= BIT(i);
+    mode_info.red_mask = 0;
+    for (int i = mode_info.red_begin; i < mode_info.red_end; ++i)
+        mode_info.red_mask |= BIT(i);
 
-    mode_info.blue = 0;
-    for (int i = vbe_info.BlueFieldPosition; i < vbe_info.BlueFieldPosition + vbe_info.BlueMaskSize; ++i)
-        mode_info.blue |= BIT(i);
+    mode_info.green_mask = 0;
+    for (int i = mode_info.green_begin; i < mode_info.green_end; ++i)
+        mode_info.green_mask |= BIT(i);
+
+    mode_info.blue_mask = 0;
+    for (int i = mode_info.blue_begin; i < mode_info.blue_end; ++i)
+        mode_info.blue_mask |= BIT(i);
     
-    mode_info.green = 0;
-    for (int i = vbe_info.GreenFieldPosition; i < vbe_info.GreenFieldPosition + vbe_info.GreenMaskSize; ++i)
-        mode_info.green |= BIT(i);
-
     return 0;
 }
 

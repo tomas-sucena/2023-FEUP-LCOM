@@ -6,13 +6,19 @@
 
 #include "VBE.h"
 
+#define RED(color) ((color & mode_info.red_mask) >> mode_info.red_begin)
+#define GREEN(color) ((color & mode_info.green_mask) >> mode_info.green_begin)
+#define BLUE(color) ((color & mode_info.blue_mask) >> mode_info.blue_begin)
+
 struct video_mode_info {
     uint8_t mode;
     uint8_t memory_model;
     phys_bytes physical_base;
     uint8_t bits_per_pixel, bytes_per_pixel;
     uint16_t x_res, y_res;
-    uint32_t red, green, blue;
+    uint32_t red_mask, green_mask, blue_mask;
+    uint8_t red_begin, green_begin, blue_begin;
+    uint8_t red_end, green_end, blue_end;
 };
 
 int (video_get_mode_info)(uint16_t mode);

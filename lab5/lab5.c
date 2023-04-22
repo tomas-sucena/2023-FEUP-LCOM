@@ -130,6 +130,18 @@ int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, ui
         if (mode_info.memory_model == VBE_INDEXED_MODE){
             color = (first + (row * no_rectangles + col) * step) % (1 << mode_info.bits_per_pixel);
         }
+        else {
+            uint32_t red = (RED(first) + col * step) % (1 << (mode_info.red_end - mode_info.red_begin));
+            red <<= mode_info.red_begin;
+
+            uint32_t green = (GREEN(first) + row * step) % (1 << (mode_info.green_end - mode_info.green_begin));
+            green <<= mode_info.green_begin;
+
+            uint32_t blue = (BLUE(first) + (col + row) * step) % (1 << (mode_info.blue_end - mode_info.blue_begin));
+            blue <<= mode_info.blue_begin;
+
+            color = red | green | blue;
+        }
         
         flag = video_draw_rectangle(x, y, width, height, color);
 		if (flag) return disable_video(flag);
