@@ -3,17 +3,47 @@
 #include "video.h"
 
 uint8_t* video_mem;
-extern vbe_mode_info_t mode_info;
+extern struct video_mode_info mode_info;
 
-int (video_start)(uint16_t mode){
-    int flag = vbe_get_mode_info(mode, &mode_info);
+int (video_get_mode_info)(uint16_t mode){
+    vbe_mode_info_t vbe_info;
+
+    int flag = vbe_get_mode_info(mode, &vbe_info);
     if (flag) return flag;
 
-    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8; // rounding by excess
-    unsigned int vram_size = mode_info.XResolution * mode_info.YResolution * bytes_per_pixel;
+    // parse the information
+    mode_info.mode = mode;
+    mode_info.memory_model = vbe_info.MemoryModel;
+    mode_info.physical_base = vbe_info.PhysBasePtr;
+    mode_info.bits_per_pixel = (phys_bytes) vbe_info.BitsPerPixel;
+    mode_info.bytes_per_pixel = (mode_info.bits_per_pixel + 7) / 8; // rounding by excess
+    mode_info.x_res = vbe_info.XResolution;
+    mode_info.y_res = vbe_info.YResolution;
+
+    // create the color masks
+    mode_info.red = 0;
+    for (int i = vbe_info.RedFieldPosition; i < vbe_info.RedFieldPosition + vbe_info.RedMaskSize; ++i)
+        mode_info.red |= BIT(i);
+
+    mode_info.blue = 0;
+    for (int i = vbe_info.BlueFieldPosition; i < vbe_info.BlueFieldPosition + vbe_info.BlueMaskSize; ++i)
+        mode_info.blue |= BIT(i);
+    
+    mode_info.green = 0;
+    for (int i = vbe_info.GreenFieldPosition; i < vbe_info.GreenFieldPosition + vbe_info.GreenMaskSize; ++i)
+        mode_info.green |= BIT(i);
+
+    return 0;
+}
+
+int (video_start)(uint16_t mode){
+    int flag = video_get_mode_info(mode);
+    if (flag) return flag;
+
+    unsigned int vram_size = mode_info.x_res * mode_info.y_res * mode_info.bytes_per_pixel;
 
     struct minix_mem_range mr;
-    mr.mr_base = (phys_bytes) mode_info.PhysBasePtr;	
+    mr.mr_base = (phys_bytes) mode_info.physical_base;	
     mr.mr_limit = mr.mr_base + vram_size;
 
     // allow memory mapping
@@ -45,29 +75,27 @@ int (video_start)(uint16_t mode){
 }
 
 int (video_draw_pixel)(uint16_t x, uint16_t y, uint32_t color){
-    if (x > mode_info.XResolution || y > mode_info.YResolution)
+    if (x > mode_info.x_res || y > mode_info.y_res)
         return 1;
 
-    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
-    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
+    uint32_t pixel_index = (y * mode_info.x_res + x) * mode_info.bytes_per_pixel;
 
-    memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
+    memcpy(&video_mem[pixel_index], &color, mode_info.bytes_per_pixel);
     return (video_mem == NULL);
 }
 
 int (video_draw_row)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
-    if (x > mode_info.XResolution || y > mode_info.YResolution)
+    if (x > mode_info.x_res || y > mode_info.y_res)
         return 1;
 
-    if (x + len > mode_info.XResolution)
-        len = mode_info.XResolution - x;
+    if (x + len > mode_info.x_res)
+        len = mode_info.x_res - x;
 
-    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
-    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
+    uint32_t pixel_index = (y * mode_info.x_res + x) * mode_info.bytes_per_pixel;
 
     while (len--){
-        memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
-        pixel_index += bytes_per_pixel;
+        memcpy(&video_mem[pixel_index], &color, mode_info.bytes_per_pixel);
+        pixel_index += mode_info.bytes_per_pixel;
 
         int flag = (video_mem == NULL);
         if (flag) return flag;
@@ -77,18 +105,17 @@ int (video_draw_row)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
 }
 
 int (video_draw_col)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
-    if (x > mode_info.XResolution || y > mode_info.YResolution)
+    if (x > mode_info.x_res || y > mode_info.y_res)
         return 1;
 
-    if (y + len > mode_info.YResolution)
-        len = mode_info.YResolution - y;
+    if (y + len > mode_info.y_res)
+        len = mode_info.y_res - y;
 
-    uint8_t bytes_per_pixel = (mode_info.BitsPerPixel + 7) / 8;
-    uint32_t pixel_index = (y * mode_info.XResolution + x) * bytes_per_pixel;
+    uint32_t pixel_index = (y * mode_info.x_res + x) * mode_info.bytes_per_pixel;
 
     while (len--){
-        memcpy(&video_mem[pixel_index], &color, bytes_per_pixel);
-        pixel_index += mode_info.XResolution * bytes_per_pixel;
+        memcpy(&video_mem[pixel_index], &color, mode_info.bytes_per_pixel);
+        pixel_index += mode_info.x_res * mode_info.bytes_per_pixel;
         
         int flag = (video_mem == NULL);
         if (flag) return flag;
@@ -98,8 +125,8 @@ int (video_draw_col)(uint16_t x, uint16_t y, uint16_t len, uint32_t color){
 }
 
 int (video_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color){
-    if (y + height > mode_info.YResolution)
-        height = mode_info.YResolution - y;
+    if (y + height > mode_info.y_res)
+        height = mode_info.y_res - y;
     
     for (uint16_t i = 0; i < height; ++i){
         int flag = video_draw_row(x, y + i, width, color);

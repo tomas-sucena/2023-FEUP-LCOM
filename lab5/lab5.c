@@ -10,7 +10,7 @@
 
 #define WAIT 5
 
-vbe_mode_info_t mode_info;
+struct video_mode_info mode_info;
 int kbd_hook_id;
 bool ih_error;
 struct kbd_data data;
@@ -113,34 +113,42 @@ int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, ui
 	int flag = video_start(mode);
 	if (flag) return disable_video(flag);
 
-	// check if any of the coordinates overflow
-	uint16_t painted_rows = mode_info.YResolution - mode_info.YResolution % no_rectangles;
-	uint16_t painted_cols = mode_info.XResolution - mode_info.XResolution % no_rectangles;
-
-	// draw the rectangles
-	uint16_t len = (painted_rows < painted_cols) ? (mode_info.YResolution / no_rectangles) 
-												 : (mode_info.XResolution / no_rectangles);
+	uint16_t painted_rows = mode_info.y_res - mode_info.y_res % no_rectangles;
+	uint16_t painted_cols = mode_info.x_res - mode_info.x_res % no_rectangles;
+	
+	uint16_t width = mode_info.x_res / no_rectangles;
+    uint16_t height = mode_info.y_res / no_rectangles;
 	
 	uint16_t x = 0, y = 0;
-	for (int i = 0; i < no_rectangles; ++i){
-		flag = video_draw_rectangle(x, y, len, len, first);
-		if (flag) return flag;
 
-		x += len;
-		if (x < mode_info.XResolution) continue;
+    // draw the rectangles
+	for (int i = 0; i < no_rectangles * no_rectangles; ++i){
+		// compute the color
+        uint32_t color = 0;
+        uint8_t row = y / height, col = x / width;
+
+        if (mode_info.memory_model == VBE_INDEXED_MODE){
+            color = (first + (row * no_rectangles + col) * step) % (1 << mode_info.bits_per_pixel);
+        }
+        
+        flag = video_draw_rectangle(x, y, width, height, color);
+		if (flag) return disable_video(flag);
+
+		x += width;
+		if (x < painted_cols) continue;
 		
 		x = 0;
-		y += len;
+		y += height;
 	}
 
 	// draw the black stripes
-	for (int i = painted_rows; i < mode_info.YResolution; ++i){
-		flag = video_draw_row(0, i, mode_info.XResolution, 0);
+	for (int i = painted_rows; i < mode_info.y_res; ++i){
+		flag = video_draw_row(0, i, mode_info.x_res, 0);
 		if (flag) return disable_video(flag);
 	}
 
-	for (int i = painted_cols; i < mode_info.XResolution; ++i){
-		flag = video_draw_col(i, 0, mode_info.YResolution, 0);
+	for (int i = painted_cols; i < mode_info.x_res; ++i){
+		flag = video_draw_col(i, 0, mode_info.y_res, 0);
 		if (flag) return disable_video(flag);
 	}
 
