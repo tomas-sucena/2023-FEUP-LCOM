@@ -123,14 +123,11 @@ int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, ui
 
     // draw the rectangles
 	for (int i = 0; i < no_rectangles * no_rectangles; ++i){
-		// compute the color
         uint32_t color = 0;
         uint8_t row = y / height, col = x / width;
 
-        if (mode_info.memory_model == VBE_INDEXED_MODE){
-            color = (first + (row * no_rectangles + col) * step) % (1 << mode_info.bits_per_pixel);
-        }
-        else {
+        // compute the color
+        if (mode_info.memory_model == VBE_DIRECT_MODE){
             uint32_t red = (RED(first) + col * step) % (1 << (mode_info.red_end - mode_info.red_begin));
             red <<= mode_info.red_begin;
 
@@ -141,6 +138,9 @@ int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, ui
             blue <<= mode_info.blue_begin;
 
             color = red | green | blue;
+        }
+        else {
+            color = (first + (row * no_rectangles + col) * step) % (1 << mode_info.bits_per_pixel);
         }
         
         flag = video_draw_rectangle(x, y, width, height, color);
@@ -171,10 +171,17 @@ int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, ui
 }
 
 int(video_test_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
-  /* To be completed */
-  printf("%s(%8p, %u, %u): under construction\n", __func__, xpm, x, y);
+    int flag = video_start(0x105);
+    if (flag) return disable_video(flag);
 
-  return 1;
+    // draw the XPM
+    flag = video_draw_xpm(xpm, x, y);
+    if (flag) return disable_video(flag);
+
+    flag = kbd_int_loop();
+    if (flag) return disable_video(flag);
+
+    return vg_exit();
 }
 
 int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint16_t yf,
