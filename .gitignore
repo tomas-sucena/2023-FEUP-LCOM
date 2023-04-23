@@ -1,4 +1,5 @@
 .vscode/
+.minix-src/
 
 # MINIX output files
 *.o
