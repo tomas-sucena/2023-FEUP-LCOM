@@ -1,4 +1,7 @@
-.vscode/
+.vscode
+.clang-format
+
+# MINIX source code
 .minix-src/
 
 # MINIX output files
